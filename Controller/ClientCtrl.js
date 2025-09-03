@@ -49,6 +49,82 @@ exports.createClient = async (req, res) => {
 
 
 // add family members
+// exports.addFamilyMember = async (req, res) => {
+//   try {
+//     const { clientId } = req.params;
+
+//     if (!clientId) {
+//       return res.status(400).json({ success: false, message: "Please provide clientId" });
+//     }
+
+//     const membersArray = req.body;
+
+//     if (!Array.isArray(membersArray) || membersArray.length === 0) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "Request body must be a non-empty array of family members"
+//       });
+//     }
+
+//     const client = await clientModel.findById(clientId);
+//     if (!client) {
+//       return res.status(404).json({ success: false, message: "Client not found" });
+//     }
+
+//     const formattedMembers = membersArray.map(member => {
+//       const {
+//         title,
+//         name,
+//         relation,
+//         annualIncome,
+//         occupation,
+//         dobActual,
+//         dobRecord,
+//         marriageDate,
+//         includeHealth,
+//         healthHistory,
+//         //new change by shivam 
+//          contactNo
+//       } = member;
+
+//       const newMember = {
+//         title,
+//         name,
+//         relation,
+//         annualIncome,
+//         occupation,
+//         dobActual,
+//         dobRecord,
+//         marriageDate,
+//         includeHealth: includeHealth || false,
+//       };
+
+//       if (includeHealth && healthHistory) {
+//         newMember.healthHistory = healthHistory;
+//       }
+
+//       return newMember;
+//     });
+
+//     client.familyMembers.push(...formattedMembers);
+//     await client.save();
+
+//     res.status(201).json({
+//       success: true,
+//       message: `${formattedMembers.length} family member(s) added successfully`,
+//       familyMembers: client.familyMembers,
+//       clientId :client._id
+//     });
+
+//   } catch (error) {
+//     res.status(500).json({
+//       success: false,
+//       message: "Failed to add family member(s)",
+//       error: error.message
+//     });
+//   }
+// };
+
 exports.addFamilyMember = async (req, res) => {
   try {
     const { clientId } = req.params;
@@ -82,8 +158,17 @@ exports.addFamilyMember = async (req, res) => {
         dobRecord,
         marriageDate,
         includeHealth,
-        healthHistory
+        healthHistory,
+        contactNo // Destructured
       } = member;
+
+      // Validate required fields
+      if (!contactNo || isNaN(Number(contactNo))) {
+        return res.status(400).json({
+          success: false,
+          message: "Contact number is required and must be a valid number"
+        });
+      }
 
       const newMember = {
         title,
@@ -95,6 +180,7 @@ exports.addFamilyMember = async (req, res) => {
         dobRecord,
         marriageDate,
         includeHealth: includeHealth || false,
+        contactNo: Number(contactNo) // Convert to Number as per schema
       };
 
       if (includeHealth && healthHistory) {
@@ -111,7 +197,7 @@ exports.addFamilyMember = async (req, res) => {
       success: true,
       message: `${formattedMembers.length} family member(s) added successfully`,
       familyMembers: client.familyMembers,
-      clientId :client._id
+      clientId: client._id
     });
 
   } catch (error) {
@@ -122,8 +208,6 @@ exports.addFamilyMember = async (req, res) => {
     });
   }
 };
-
-
 
 // add financial details of the client
 exports.addFinancialInfo = async (req, res) => {
