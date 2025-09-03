@@ -1,3 +1,5 @@
+
+// LeadOccupation Model  
 const mongoose = require("mongoose");
 
 const leadOccupationSchema = new mongoose.Schema(
@@ -6,8 +8,9 @@ const leadOccupationSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    leadOccupation: {
-      type: String,
+    occupationType: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "OccupationType",
       required: true,
     },
   },
@@ -16,3 +19,5 @@ const leadOccupationSchema = new mongoose.Schema(
 
 const LeadOccupation = mongoose.model("LeadOccupation", leadOccupationSchema);
 module.exports = LeadOccupation;
+
+

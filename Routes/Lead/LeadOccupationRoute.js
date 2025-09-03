@@ -1,10 +1,17 @@
 const express = require("express");
 const router = express.Router();
-const LeadOccupationCtrl = require("../../Controller/Lead/LeadOccupationCtrl");
+const OccupationCtrl = require("../../Controller/Lead/LeadOccupationCtrl");
 
-router.post("/", LeadOccupationCtrl.createOccupation); // Create
-router.get("/", LeadOccupationCtrl.getOccupation); // Read
-router.put("/:id", LeadOccupationCtrl.updateOccupation); // Update
-router.delete("/delete/:id", LeadOccupationCtrl.deleteOccupation); // Delete
+
+
+// create Occupation
+router.post("/", OccupationCtrl.createOccupation); 
+// Get All Occupations
+router.get("/", OccupationCtrl.getAllOccupations); 
+// Get Occupation by ID, Update Occupation, and Delete Occupation
+router.get("/:id", OccupationCtrl.getOccupationById); 
+router.put("/:id", OccupationCtrl.updateOccupation); 
+router.delete("/:id",OccupationCtrl.deleteOccupation); 
+
 
 module.exports = router;

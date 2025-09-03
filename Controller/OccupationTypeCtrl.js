@@ -11,21 +11,27 @@ exports.createOccupationType = async (req, res) => {
   try {
     const newOccupationType = new OccupationType({ occupationType });
     await newOccupationType.save();
-    res.status(201).json(newOccupationType);
+    res.status(201).json({success : true, data : newOccupationType });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
+
+
 // Get all OccupationTypes
 exports.getAllOccupationTypes = async (req, res) => {
   try {
     const occupationTypes = await OccupationType.find();
-    res.json(occupationTypes);
+    console.log("Occupation Types:", occupationTypes);
+    res.json({success : true, data: occupationTypes });
   } catch (error) {
+    console.warn("Error fetching Occupation Types:", error);
     res.status(500).json({ error: error.message });
   }
 };
+
+
 
 // Get single OccupationType by ID
 exports.getOccupationTypeById = async (req, res) => {
@@ -36,11 +42,12 @@ exports.getOccupationTypeById = async (req, res) => {
     if (!occupationType) {
       return res.status(404).json({ error: "OccupationType not found" });
     }
-    res.json(occupationType);
+    res.status(200).json({success : true, data: occupationType });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
+
 
 // Update OccupationType by ID
 exports.updateOccupationType = async (req, res) => {
@@ -62,22 +69,28 @@ exports.updateOccupationType = async (req, res) => {
       return res.status(404).json({ error: "OccupationType not found" });
     }
 
-    res.json(updatedOccupationType);
+    res.status(200).json({success : true, data: updatedOccupationType });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
+
+
+
 // Delete OccupationType by ID
 exports.deleteOccupationType = async (req, res) => {
   const { id } = req.params;
+  if (!id) {
+    return res.status(400).json({ error: "OccupationType ID is required" });
+  }
 
   try {
     const deletedOccupationType = await OccupationType.findByIdAndDelete(id);
     if (!deletedOccupationType) {
       return res.status(404).json({ error: "OccupationType not found" });
     }
-    res.json({ message: "OccupationType deleted successfully" });
+    res.status(200).json({success : true, message: "OccupationType deleted successfully" });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

@@ -63,6 +63,7 @@ const RegistrarSchema = new mongoose.Schema(
     appPassword2: String,
 
     remark: String,
+    
   },
   { timestamps: true }
 );

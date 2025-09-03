@@ -6,14 +6,15 @@ const upload = require("../config/upload");
 
 
 
-// create Prospect
+// create prospect
 router.post("/create", ProspectCtrl.createProspect);
 
+
 // add family members
-router.put("/add/family/:id", ProspectCtrl.createProspect);
+router.put("/add/family/:id", ProspectCtrl.addFamilyMember);
 
 // add financial info
-router.put( "/add/financialinfo/:prospecttId",
+router.put( "/add/financialinfo/:id",
  upload.fields([
     { name: "insuranceDocuments", maxCount: 10 },
     { name: "investmentDocuments", maxCount: 10 },
@@ -40,12 +41,16 @@ router.put("/update/personaldetails/:id", ProspectCtrl.updatePersonalDetails);
 router.get("/all", ProspectCtrl.getAllProspects)
 
 
-// Get Prospect by ID
+// Get Prospects by ID
 router.get("/:id", ProspectCtrl.getProspectById);
 
 
-// Update Prospect  Status by ID
+// Update Prospect Status by ID
 router.put("/update/status/:id", ProspectCtrl.updateProspectStatus)
+
+
+// Get all Family Members
+router.get("/family/details/:id", ProspectCtrl.getAllFamilyMembers)
 
 
 // Delete Prospect  by ID

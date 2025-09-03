@@ -48,6 +48,10 @@ router.get("/:id", SuspectCtrl.getSuspectById);
 router.put("/update/status/:id", SuspectCtrl.updateSuspectStatus)
 
 
+// Get all Family Members
+router.get("/family/details/:id", SuspectCtrl.getAllFamilyMembers)
+
+
 // Delete Suspect  by ID
 router.delete("/delete/:id", SuspectCtrl.deleteSuspect);
 

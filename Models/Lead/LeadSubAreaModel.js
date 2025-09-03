@@ -1,3 +1,4 @@
+
 const mongoose = require("mongoose");
 
 const LeadSubAreaSchema = new mongoose.Schema({
@@ -9,4 +10,4 @@ const LeadSubAreaSchema = new mongoose.Schema({
   subAreaName: { type: String, required: true },
 });
 
-module.exports = mongoose.model("leadSubArea", LeadSubAreaSchema);
+module.exports = mongoose.model("LeadSubArea", LeadSubAreaSchema);

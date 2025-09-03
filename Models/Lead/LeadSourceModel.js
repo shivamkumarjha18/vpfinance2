@@ -1,18 +1,20 @@
+
 const mongoose = require("mongoose");
 
-const leadSourceSchema = new mongoose.Schema(
+const LeadSourceSchema = new mongoose.Schema(
   {
     sourceName: {
       type: String,
       required: true,
     },
-    leadType: {
-      type: String,
+    leadTypeId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "LeadType",
       required: true,
     },
   },
   { timestamps: true }
 );
 
-const LeadSource = mongoose.model("LeadSource", leadSourceSchema);
+const LeadSource = mongoose.model("LeadSource", LeadSourceSchema);
 module.exports = LeadSource;

@@ -47,6 +47,10 @@ router.get("/:id", ClientCtrl.getClientById);
 router.put("/update/status/:id",  ClientCtrl.updateClientStatus)
 
 
+// Get all Family Members
+router.get("/family/details/:id", ClientCtrl.getAllFamilyMembers)
+
+
 // Create new KYC (pass clientId as query or param)
 router.post('/kyc/create/:clientId', upload.single('document'), ClientCtrl.createKyc);
 
@@ -68,15 +72,6 @@ router.delete('/kyc/:id', ClientCtrl.deleteKyc);
 
 
 
-
-// previous routes
-// router.post("/client-first-form", ClientCtrl.createClientFirstForm);
-// router.put("/client-first-form/:id", ClientCtrl.updateClientFirstForm);
-// router.get("/complete-client-form", ClientCtrl.getCompleteClientForms);
-// router.get("/add-client/:id", ClientCtrl.getAddClientFormById);
-// router.put("/add-client/:id", ClientCtrl.updateAddClientForm);
-// router.delete("/add-client/:id", ClientCtrl.deleteAddClientForm);
-// router.put("/status/:id", ClientCtrl.updateClientLeadStatus);
 
 
 
