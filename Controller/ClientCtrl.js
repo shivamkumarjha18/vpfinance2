@@ -153,13 +153,14 @@ exports.addFamilyMember = async (req, res) => {
         name,
         relation,
         annualIncome,
+        contact,
         occupation,
         dobActual,
         dobRecord,
         marriageDate,
         includeHealth,
         healthHistory,
-        contactNo // Destructured
+    
       } = member;
 
       // Validate required fields
@@ -175,12 +176,13 @@ exports.addFamilyMember = async (req, res) => {
         name,
         relation,
         annualIncome,
+        contact,
         occupation,
         dobActual,
         dobRecord,
         marriageDate,
         includeHealth: includeHealth || false,
-        contactNo: Number(contactNo) // Convert to Number as per schema
+        
       };
 
       if (includeHealth && healthHistory) {

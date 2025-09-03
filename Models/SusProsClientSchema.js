@@ -259,10 +259,9 @@ const familyMemberSchema = new mongoose.Schema({
   dobRecord: Date,
   marriageDate: Date,
   includeHealth: Boolean,
+  contact:String,   
   // new things add by shivam
-  contactNo:{
- type: Number, required: true 
-  },
+
   healthHistory: [healthHistorySchema],
 });
 
