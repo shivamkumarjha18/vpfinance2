@@ -14,7 +14,7 @@ const app = express();
 
 // Middleware
 app.use(cors({
-  origin: 'http://localhost:3000', // Specific frontend URL
+  origin: 'https://test00-lemon.vercel.app/', // Specific frontend URL
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Allowed methods
   credentials: true // Allow cookies/auth headers if needed
 }));
