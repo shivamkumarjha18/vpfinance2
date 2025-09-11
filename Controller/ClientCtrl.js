@@ -1,14 +1,6 @@
-
-
-
 const clientModel = require("../Models/SusProsClientSchema");
-const generateAndStoreGroupCode = require("../utils/generateGroupCode")
+const generateAndStoreGroupCode = require("../utils/generateGroupCode");
 const Kyc = require("../Models/kyc");
-
-
-
-
-
 
 // create Client
 exports.createClient = async (req, res) => {
@@ -30,7 +22,9 @@ exports.createClient = async (req, res) => {
       });
     }
 
-    const groupCode = await generateAndStoreGroupCode(savedClient._id.toString());
+    const groupCode = await generateAndStoreGroupCode(
+      savedClient._id.toString()
+    );
     if (!savedClient.personalDetails) {
       savedClient.personalDetails = {};
     }
@@ -46,108 +40,35 @@ exports.createClient = async (req, res) => {
   }
 };
 
-
-
 // add family members
-// exports.addFamilyMember = async (req, res) => {
-//   try {
-//     const { clientId } = req.params;
-
-//     if (!clientId) {
-//       return res.status(400).json({ success: false, message: "Please provide clientId" });
-//     }
-
-//     const membersArray = req.body;
-
-//     if (!Array.isArray(membersArray) || membersArray.length === 0) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "Request body must be a non-empty array of family members"
-//       });
-//     }
-
-//     const client = await clientModel.findById(clientId);
-//     if (!client) {
-//       return res.status(404).json({ success: false, message: "Client not found" });
-//     }
-
-//     const formattedMembers = membersArray.map(member => {
-//       const {
-//         title,
-//         name,
-//         relation,
-//         annualIncome,
-//         occupation,
-//         dobActual,
-//         dobRecord,
-//         marriageDate,
-//         includeHealth,
-//         healthHistory,
-//         //new change by shivam 
-//          contactNo
-//       } = member;
-
-//       const newMember = {
-//         title,
-//         name,
-//         relation,
-//         annualIncome,
-//         occupation,
-//         dobActual,
-//         dobRecord,
-//         marriageDate,
-//         includeHealth: includeHealth || false,
-//       };
-
-//       if (includeHealth && healthHistory) {
-//         newMember.healthHistory = healthHistory;
-//       }
-
-//       return newMember;
-//     });
-
-//     client.familyMembers.push(...formattedMembers);
-//     await client.save();
-
-//     res.status(201).json({
-//       success: true,
-//       message: `${formattedMembers.length} family member(s) added successfully`,
-//       familyMembers: client.familyMembers,
-//       clientId :client._id
-//     });
-
-//   } catch (error) {
-//     res.status(500).json({
-//       success: false,
-//       message: "Failed to add family member(s)",
-//       error: error.message
-//     });
-//   }
-// };
-
 exports.addFamilyMember = async (req, res) => {
   try {
     const { clientId } = req.params;
 
     if (!clientId) {
-      return res.status(400).json({ success: false, message: "Please provide clientId" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Please provide clientId" });
     }
 
     const membersArray = req.body;
+    console.log(membersArray);
 
     if (!Array.isArray(membersArray) || membersArray.length === 0) {
       return res.status(400).json({
         success: false,
-        message: "Request body must be a non-empty array of family members"
+        message: "Request body must be a non-empty array of family members",
       });
     }
 
     const client = await clientModel.findById(clientId);
     if (!client) {
-      return res.status(404).json({ success: false, message: "Client not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Client not found" });
     }
 
-    const formattedMembers = membersArray.map(member => {
+    const formattedMembers = membersArray.map((member) => {
       const {
         title,
         name,
@@ -160,16 +81,7 @@ exports.addFamilyMember = async (req, res) => {
         marriageDate,
         includeHealth,
         healthHistory,
-    
       } = member;
-
-      // Validate required fields
-      if (!contactNo || isNaN(Number(contactNo))) {
-        return res.status(400).json({
-          success: false,
-          message: "Contact number is required and must be a valid number"
-        });
-      }
 
       const newMember = {
         title,
@@ -182,7 +94,6 @@ exports.addFamilyMember = async (req, res) => {
         dobRecord,
         marriageDate,
         includeHealth: includeHealth || false,
-        
       };
 
       if (includeHealth && healthHistory) {
@@ -199,14 +110,13 @@ exports.addFamilyMember = async (req, res) => {
       success: true,
       message: `${formattedMembers.length} family member(s) added successfully`,
       familyMembers: client.familyMembers,
-      clientId: client._id
+      clientId: client._id,
     });
-
   } catch (error) {
     res.status(500).json({
       success: false,
       message: "Failed to add family member(s)",
-      error: error.message
+      error: error.message,
     });
   }
 };
@@ -217,13 +127,17 @@ exports.addFinancialInfo = async (req, res) => {
     const { clientId } = req.params;
 
     if (!clientId) {
-      return res.status(400).json({ success: false, message: "Client ID is required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Client ID is required" });
     }
 
     // Find the client
     const client = await clientModel.findById(clientId);
     if (!client) {
-      return res.status(404).json({ success: false, message: "Client not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Client not found" });
     }
 
     // console.log("Request body:", req.body);
@@ -234,31 +148,71 @@ exports.addFinancialInfo = async (req, res) => {
     let investmentsData = [];
     let loansData = [];
 
+    console.log(req.body.insurance);
+    console.log(req.body.investments);
+    console.log(req.body.loans);
+
+    const insurance = req?.body?.insurance?.map((item) => {
+      if (!item.submissionDate || item.submissionDate.trim() === "") {
+        return {
+          ...item,
+          submissionDate: new Date().toISOString().split("T")[0], // format YYYY-MM-DD
+        };
+      }
+      return item;
+    });
+
+    const investments = req?.body?.investments?.map((item) => {
+      if (!item.submissionDate || item.submissionDate.trim() === "") {
+        return {
+          ...item,
+          submissionDate: new Date().toISOString().split("T")[0], // format YYYY-MM-DD
+        };
+      }
+      return item;
+    });
+
+    const loans = req?.body?.loans?.map((item) => {
+      if (!item.submissionDate || item.submissionDate.trim() === "") {
+        return {
+          ...item,
+          submissionDate: new Date().toISOString().split("T")[0], // format YYYY-MM-DD
+        };
+      }
+      return item;
+    });
+
     try {
       // Handle both JSON strings and direct arrays
       if (req.body.insurance) {
-        insuranceData = typeof req.body.insurance === 'string'
-          ? JSON.parse(req.body.insurance)
-          : req.body.insurance;
+        // typeof req.body.insurance === "string"
+        //   ? JSON.parse(req.body.insurance)
+        //   : req.body.insurance;
+        insuranceData =
+          typeof req.body.insurance === "string"
+            ? JSON.parse(insurance)
+            : insurance;
       }
 
       if (req.body.investments) {
-        investmentsData = typeof req.body.investments === 'string'
-          ? JSON.parse(req.body.investments)
-          : req.body.investments;
+        investmentsData =
+          typeof req.body.investments === "string"
+            ? JSON.parse(investments)
+            : investments;
       }
 
       if (req.body.loans) {
-        loansData = typeof req.body.loans === 'string'
-          ? JSON.parse(req.body.loans)
-          : req.body.loans;
+        loansData =
+          typeof req.body.loans === "string"
+            ? JSON.parse(loans)
+            : loans;
       }
     } catch (parseError) {
       console.error("JSON parsing error:", parseError);
       return res.status(400).json({
         success: false,
         message: "Invalid JSON data format",
-        error: parseError.message
+        error: parseError.message,
       });
     }
 
@@ -281,18 +235,16 @@ exports.addFinancialInfo = async (req, res) => {
     // };
 
     const attachFiles = (dataArray, uploadedFilesArray = []) => {
-  if (Array.isArray(dataArray) && Array.isArray(uploadedFilesArray)) {
-    dataArray.forEach((item, index) => {
-      if (uploadedFilesArray[index]) {
-        item.document = uploadedFilesArray[index].filename;
-      } else {
-        item.document = null;
+      if (Array.isArray(dataArray) && Array.isArray(uploadedFilesArray)) {
+        dataArray.forEach((item, index) => {
+          if (uploadedFilesArray[index]) {
+            item.document = uploadedFilesArray[index].filename;
+          } else {
+            item.document = null;
+          }
+        });
       }
-    });
-  }
-};
-
-
+    };
 
     // Safely access file arrays
     const insuranceFiles = req.files?.insuranceDocuments || [];
@@ -324,7 +276,8 @@ exports.addFinancialInfo = async (req, res) => {
     }
 
     // Check if any data was actually added
-    const totalItemsAdded = insuranceData.length + investmentsData.length + loansData.length;
+    const totalItemsAdded =
+      insuranceData.length + investmentsData.length + loansData.length;
     if (totalItemsAdded === 0) {
       return res.status(400).json({
         success: false,
@@ -339,14 +292,13 @@ exports.addFinancialInfo = async (req, res) => {
       success: true,
       message: "Financial info with documents added successfully",
       financialInfo: client.financialInfo,
-      clientId:client._id,
+      clientId: client._id,
       added: {
         insurance: insuranceData.length,
         investments: investmentsData.length,
-        loans: loansData.length
-      }
+        loans: loansData.length,
+      },
     });
-
   } catch (error) {
     console.error("Error in addFinancialInfo:", error);
     return res.status(500).json({
@@ -357,8 +309,6 @@ exports.addFinancialInfo = async (req, res) => {
   }
 };
 
-
-
 // add future priorities and needs
 exports.addFuturePrioritiesAndNeeds = async (req, res) => {
   try {
@@ -367,31 +317,35 @@ exports.addFuturePrioritiesAndNeeds = async (req, res) => {
 
     // Validate client ID
     if (!clientId) {
-      return res.status(400).json({ error: 'Client ID is required' });
+      return res.status(400).json({ error: "Client ID is required" });
     }
 
     // Validate futurePriorities
     if (!Array.isArray(futurePriorities)) {
-      return res.status(400).json({ error: 'futurePriorities must be an array' });
+      return res
+        .status(400)
+        .json({ error: "futurePriorities must be an array" });
     }
 
     for (const priority of futurePriorities) {
       if (
         !priority.priorityName ||
         !Array.isArray(priority.members) ||
-        typeof priority.approxAmount !== 'number' ||
+        typeof priority.approxAmount !== "number" ||
         !priority.duration
       ) {
-        return res.status(400).json({ error: 'Invalid priority object structure' });
+        return res
+          .status(400)
+          .json({ error: "Invalid priority object structure" });
       }
     }
 
     // Build update object
     const updateData = {
-      futurePriorities
+      futurePriorities,
     };
 
-    if (needs && typeof needs === 'object') {
+    if (needs && typeof needs === "object") {
       updateData.needs = needs;
     }
 
@@ -402,38 +356,95 @@ exports.addFuturePrioritiesAndNeeds = async (req, res) => {
     );
 
     if (!updatedClient) {
-      return res.status(404).json({ error: 'Client not found' });
+      return res.status(404).json({ error: "Client not found" });
     }
 
     res.status(200).json({
-      message: 'Future priorities (and needs if provided) updated successfully',
+      message: "Future priorities (and needs if provided) updated successfully",
       client: updatedClient,
-      clientId: updatedClient._id
+      clientId: updatedClient._id,
     });
-
   } catch (error) {
-    console.error('Error updating future priorities and needs:', error);
-    res.status(500).json({ error: 'Server error', details: error.message });
+    console.error("Error updating future priorities and needs:", error);
+    res.status(500).json({ error: "Server error", details: error.message });
   }
 };
 
-
-
-
-
 // add proposed financial plan
+// exports.addProposedFinancialPlan = async (req, res) => {
+//   try {
+//     const { clientId } = req.params;
+
+//     // Validate client ID
+//     if (!clientId) {
+//       return res
+//         .status(400)
+//         .json({ success: false, message: "Client ID is required" });
+//     }
+
+//     // Validate request body
+//     if (!req.body) {
+//       return res
+//         .status(400)
+//         .json({ success: false, message: "Request body is required" });
+//     }
+
+//     // Handle file uploads
+//     const files = req.files;
+//     if (!files) {
+//       return res.status(401).json({
+//         success: false,
+//         message: "Please provide documents to upload",
+//       });
+//     }
+
+//     const documentPaths = files.map((file) => file.filename);
+
+//     const clientToUpdate = await clientModel.findById(clientId);
+//     if (!clientToUpdate) {
+//       return res
+//         .status(404)
+//         .json({ success: false, message: "Client not found" });
+//     }
+
+//     // Create new proposed plan object using {...req.body}
+//     const newProposedPlan = {
+//       ...req.body,
+//       documents: documentPaths,
+//     };
+
+//     clientToUpdate.proposedPlan.push(newProposedPlan);
+
+//     await clientToUpdate.save();
+
+//     res.status(200).json({
+//       success: true,
+//       message: "Proposed financial plan updated successfully",
+//       proposedPlan: clientToUpdate.proposedPlan,
+//       clientId: clientToUpdate._id,
+//     });
+//   } catch (error) {
+//     console.error("Error adding proposed financial plan:", error);
+//     res.status(500).json({ error: "Server error", details: error.message });
+//   }
+// };
+
 exports.addProposedFinancialPlan = async (req, res) => {
   try {
     const { clientId } = req.params;
 
     // Validate client ID
     if (!clientId) {
-      return res.status(400).json({ success: false, message: "Client ID is required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Client ID is required" });
     }
 
     // Validate request body
     if (!req.body) {
-      return res.status(400).json({ success: false, message: "Request body is required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Request body is required" });
     }
 
     // Handle file uploads
@@ -441,21 +452,27 @@ exports.addProposedFinancialPlan = async (req, res) => {
     if (!files) {
       return res.status(401).json({
         success: false,
-        message: "Please provide documents to upload"
+        message: "Please provide documents to upload",
       });
     }
 
-    const documentPaths = files.map(file => file.filename);
+    const documentPaths = files.map((file) => file.filename);
 
     const clientToUpdate = await clientModel.findById(clientId);
     if (!clientToUpdate) {
-      return res.status(404).json({ success: false, message: "Client not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Client not found" });
     }
 
-    // Create new proposed plan object using {...req.body}
+    // Create new proposed plan object
     const newProposedPlan = {
       ...req.body,
-      documents: documentPaths
+      createdDate:
+        !req.body.createdDate || req.body.createdDate.trim() === ""
+          ? new Date().toISOString().split("T")[0] // YYYY-MM-DD format
+          : req.body.createdDate,
+      documents: documentPaths,
     };
 
     clientToUpdate.proposedPlan.push(newProposedPlan);
@@ -466,17 +483,59 @@ exports.addProposedFinancialPlan = async (req, res) => {
       success: true,
       message: "Proposed financial plan updated successfully",
       proposedPlan: clientToUpdate.proposedPlan,
-      clientId: clientToUpdate._id
+      clientId: clientToUpdate._id,
     });
-
   } catch (error) {
-    console.error('Error adding proposed financial plan:', error);
-    res.status(500).json({ error: 'Server error', details: error.message });
+    console.error("Error adding proposed financial plan:", error);
+    res.status(500).json({ error: "Server error", details: error.message });
   }
 };
 
 
+//update porposed status
+exports.updatePorposedStatus = async (req, res) => {
+  try {
+    const { clientId } = req.params;
+    const { status, selected } = req.body;
+    console.log(status, selected);
 
+    if (!status || !selected) {
+      return res.status(403).json({ message: "all fields are required" });
+    }
+
+    if (!clientId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Client ID is required" });
+    }
+
+    if (!req.body) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Request body is required" });
+    }
+
+    const result = await clientModel.updateOne(
+      { _id: clientId, "proposedPlan._id": selected }, // match client and plan
+      { $set: { "proposedPlan.$.status": status } }
+    );
+
+    if (result.modifiedCount === 0) {
+      return res
+        .status(404)
+        .json({ message: "Plan not found or no changes made" });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Proposed financial plan updated successfully",
+      clientId,
+    });
+  } catch (error) {
+    console.error("Error adding proposed financial plan:", error);
+    res.status(500).json({ error: "Server error", details: error.message });
+  }
+};
 
 
 exports.updatePersonalDetails = async (req, res) => {
@@ -485,15 +544,20 @@ exports.updatePersonalDetails = async (req, res) => {
 
     // 1. Check if the client ID is provided in the URL.
     if (!clientId) {
-      return res.status(400).json({ success: false, message: "Client ID is required." });
+      return res
+        .status(400)
+        .json({ success: false, message: "Client ID is required." });
     }
-    
+
     // 2. Validate that the request body contains the new personalDetails.
     const { personalDetails } = req.body;
     if (!personalDetails || Object.keys(personalDetails).length === 0) {
-      return res.status(400).json({ success: false, message: "New personal details are required in the request body." });
+      return res.status(400).json({
+        success: false,
+        message: "New personal details are required in the request body.",
+      });
     }
-    
+
     // 3. Find the client by ID and update the personalDetails object.
     // The '$set' operator is used here to replace the entire 'personalDetails' object.
     const updatedClient = await clientModel.findByIdAndUpdate(
@@ -504,75 +568,163 @@ exports.updatePersonalDetails = async (req, res) => {
 
     // 4. Handle the case where the client ID is not found.
     if (!updatedClient) {
-      return res.status(404).json({ success: false, message: "Client not found." });
+      return res
+        .status(404)
+        .json({ success: false, message: "Client not found." });
     }
 
     // 5. Send a successful response with the updated client document.
     res.status(200).json({
       success: true,
       message: "Personal details updated successfully.",
-      updatedClient: updatedClient
+      updatedClient: updatedClient,
     });
-
   } catch (error) {
     // 6. Centralized error handling.
     console.error("Error updating personal details:", error);
     res.status(500).json({
       success: false,
       message: "Server error.",
-      details: error.message
+      details: error.message,
     });
   }
 };
 
 
+exports.updateImage = async (req, res) => {
+  try {
+    const { firstId } = req.params;
+    const { secondID } = req.body;  // yahan se bhejna hoga frontend se
 
+    console.log(req.body)
+
+    console.log(firstId)
+    console.log(secondID)
+
+
+    console.log("req.body:", req.body);
+    console.log("req.params:", req.params);
+    console.log("req.file:", req.file); //
+
+    
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: "Image file is required." });
+    }
+
+
+    // 1. Check if the client ID is provided in the URL.
+    if (!firstId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Client ID is required." });
+    }
+    // 2. Validate that the request body contains the new personalDetails.
+    // const imageFilename = req.file.filename;
+    const imagePath = `/Images/${req.file.filename}`;
+    // console.log(Image)
+
+    // const imagePath = `/Images/${imageFilename}`;
+
+    // if (!image) {
+    //   console.log("image required");
+
+    // }
+
+    // const result = await clientModel.updateOne(
+    //   { _id: firstId },
+    //   { $set: { "personalDetails.profilepic": imagePath } }
+    // );
+
+    // if (result.modifiedCount === 0) {
+    //   return res
+    //     .status(404)
+    //     .json({ message: "Plan not found or no changes made" });
+    // }
+
+    // 4. Handle the case where the client ID is not found.
+    const updatedClient = await clientModel.findByIdAndUpdate(
+      firstId,
+      { $set: { "personalDetails.profilepic": imagePath } },
+      { new: true }
+    );
+
+
+    if (!updatedClient) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Client not found." });
+    }
+
+    // 5. Send a successful response with the updated client document.
+    res.status(200).json({
+      success: true,
+      message: "Personal details updated successfully.",
+      updatedClient: updatedClient,
+    });
+  } catch (error) {
+    // 6. Centralized error handling.
+    console.error("Error updating personal details:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error.",
+      details: error.message,
+    });
+  }
+};
 
 // Get all CLients
 exports.getAllClients = async (req, res) => {
   try {
     const allClients = await clientModel.find({ status: "client" });
-   if(allClients.length === 0) return res.status(404).json({success : false, message: "No clients found"});
-    res.status(200).json({success : true, clients: allClients});
-   } catch (error) {
-      console.error(error);
-      res.status(500).json({success : false, message: "Server error while fetching clients", error: error.message});
-
-    }
-}
-
-
-
-exports.getClientById = async(req, res)=>{
-  try {
-    const {id} = req.params;
-    if(!id) {
-      return res.status(400).json({success: false, message: "Client ID is required"});
-    }
-    const client = await clientModel.findById(id);
-    if(!client) {
-      return res.status(404).json({success: false, message: "Client not found"});
-    }
-    res.status(200).json({success: true, client});
+    if (allClients.length === 0)
+      return res
+        .status(404)
+        .json({ success: false, message: "No clients found" });
+    res.status(200).json({ success: true, clients: allClients });
   } catch (error) {
     console.error(error);
-    res.status(500).json({success : false, message: "Server error while fetching clients", error: error.message});
-
+    res.status(500).json({
+      success: false,
+      message: "Server error while fetching clients",
+      error: error.message,
+    });
   }
-}
+};
 
-
+exports.getClientById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Client ID is required" });
+    }
+    const client = await clientModel.findById(id);
+    if (!client) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Client not found" });
+    }
+    res.status(200).json({ success: true, client });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Server error while fetching clients",
+      error: error.message,
+    });
+  }
+};
 
 // update Client Status
 exports.updateClientStatus = async (req, res) => {
-
   try {
     const { status } = req.body;
-    if(! status){
+    if (!status) {
       return res.status(400).json({ message: "Status is required" });
     }
-    const {id} = req.params;
-    if(! id) return res.status(400).json({ message: "Client ID is required" });
+    const { id } = req.params;
+    if (!id) return res.status(400).json({ message: "Client ID is required" });
     const updatedClient = await clientModel.findByIdAndUpdate(
       id,
       { status },
@@ -583,44 +735,44 @@ exports.updateClientStatus = async (req, res) => {
     }
     res.status(200).json(updatedClient);
   } catch (error) {
-     console.error(error);
-     res.status(500).json({ error: error.message });
+    console.error(error);
+    res.status(500).json({ error: error.message });
   }
-  
-}
-
-
+};
 
 // delete a client
-exports.deleteClient = async(req, res)=>{
+exports.deleteClient = async (req, res) => {
   try {
-    
-    const {id} = req.params;
-    if(! id) {
-      return res.status(400).json({ success: false, message: "Client ID is required" });
+    const { id } = req.params;
+    if (!id) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Client ID is required" });
     }
 
     await clientModel.findByIdAndDelete(id);
-    res.status(200).json({ success: true, message: "Client deleted successfully" });
-
-   } catch (error) {
-     console.error(error);
-     res.status(500).json({ success: false, message: "Server error while deleting client", error: error.message });   
-    }
+    res
+      .status(200)
+      .json({ success: true, message: "Client deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Server error while deleting client",
+      error: error.message,
+    });
   }
+};
 
-
-
-
-  // Get All Family Members
-  exports.getAllFamilyMembers = async (req, res) => {
+// Get All Family Members
+exports.getAllFamilyMembers = async (req, res) => {
   try {
     const { id } = req.params;
 
     if (!id) {
       return res.status(400).json({
         success: false,
-        message: "Please provide Client ID"
+        message: "Please provide Client ID",
       });
     }
 
@@ -629,32 +781,25 @@ exports.deleteClient = async(req, res)=>{
     if (!client) {
       return res.status(404).json({
         success: false,
-        message: "Client not found for this ID"
+        message: "Client not found for this ID",
       });
     }
 
     res.status(200).json({
       success: true,
       message: "Family members fetched successfully",
-      data: client.familyMembers
+      data: client.familyMembers,
     });
-
   } catch (error) {
     console.error("Error in fetching all family members:", error);
     res.status(500).json({
       success: false,
-      message: "Server error while fetching family members"
+      message: "Server error while fetching family members",
     });
   }
 };
 
-
-
-
-
-
-
-  // CREATE a new KYC
+// CREATE a new KYC
 exports.createKyc = async (req, res) => {
   try {
     const DOCUMENT_ENUM = [
@@ -666,45 +811,51 @@ exports.createKyc = async (req, res) => {
       "Photo",
       "Driving License",
       "Voter Id",
-      "Policy Status"
+      "Policy Status",
     ];
-    
+
     const { clientId } = req.params;
     const { memberName, documentName, documentNumber, remark } = req.body;
 
     if (!clientId) {
-      return res.status(400).json({ success: false, message: "Client ID is required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Client ID is required" });
     }
 
     // Validate documentName against enum
     if (!DOCUMENT_ENUM.includes(documentName.trim())) {
       return res.status(400).json({
         success: false,
-        message: `Invalid documentName. Must be one of: ${DOCUMENT_ENUM.join(", ")}`,
+        message: `Invalid documentName. Must be one of: ${DOCUMENT_ENUM.join(
+          ", "
+        )}`,
       });
     }
 
     // Check if file was uploaded
     if (!req.file) {
-      return res.status(400).json({ success: false, message: "Please upload a document" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Please upload a document" });
     }
 
     // Find client
     const client = await clientModel.findById(clientId);
     if (!client) {
-      return res.status(404).json({ success: false, message: "Client not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Client not found" });
     }
-    
+
     // Save file name
     // const fileUrl = req.file.filename;
 
-    const fileUrl = `${req.protocol}://${req.get('host')}/Images/${req.file.filename}`;
+    const fileUrl = `${req.protocol}://${req.get("host")}/Images/${req.file.filename
+      }`;
 
-    
-
-    
     // console.log(fileUrl, "fileUrl in createKyc");
-    
+
     // Create KYC
     const kyc = new Kyc({
       memberName,
@@ -716,34 +867,34 @@ exports.createKyc = async (req, res) => {
     });
 
     await kyc.save();
-    
+
     // Link KYC to client
     client.kycs.push(kyc._id);
     await client.save();
-    
-    // Determine remaining vs completed documents
-    const uploadedKycs = await Kyc.find({ user: clientId }).select("documentName");
-    
-    const uploadedDocs = uploadedKycs.map(k => k.documentName);
 
-    const responseList = DOCUMENT_ENUM.map(doc => ({
+    // Determine remaining vs completed documents
+    const uploadedKycs = await Kyc.find({ user: clientId }).select(
+      "documentName"
+    );
+
+    const uploadedDocs = uploadedKycs.map((k) => k.documentName);
+
+    const responseList = DOCUMENT_ENUM.map((doc) => ({
       documentName: doc,
-      status: uploadedDocs.includes(doc) ? "complete" : "remaining"
+      status: uploadedDocs.includes(doc) ? "complete" : "remaining",
     }));
 
     return res.status(201).json({
       success: true,
       message: "KYC uploaded successfully",
       uploaded: kyc,
-      documentStatus: responseList
+      documentStatus: responseList,
     });
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, error: error.message });
   }
 };
-
-
 
 // GET all KYC documents for a specific member
 exports.getKycsByClient = async (req, res) => {
@@ -753,8 +904,8 @@ exports.getKycsByClient = async (req, res) => {
     if (kycs.length === 0) {
       return res.status(404).json({
         success: false,
-        message: "No Kycs found for this Cleint."
-      })
+        message: "No Kycs found for this Cleint.",
+      });
     }
 
     return res.status(200).json({ success: true, kycs });
@@ -763,27 +914,26 @@ exports.getKycsByClient = async (req, res) => {
   }
 };
 
-
-
 // DELETE a KYC document
 exports.deleteKyc = async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     const kyc = await Kyc.findByIdAndDelete(id);
     if (!kyc) {
       return res.status(404).json({ success: false, message: "KYC not found" });
     }
-    
+
     // Optionally remove it from client's kycs array
     await clientModel.updateOne({ kycs: id }, { $pull: { kycs: id } });
 
-    return res.status(200).json({ success: true, message: "KYC deleted successfully" });
+    return res
+      .status(200)
+      .json({ success: true, message: "KYC deleted successfully" });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }
 };
-
 
 // UPDATE a KYC document
 exports.updateKyc = async (req, res) => {
@@ -801,16 +951,18 @@ exports.updateKyc = async (req, res) => {
       "Photo",
       "Driving License",
       "Voter Id",
-      "Policy Status"
+      "Policy Status",
     ];
-    
+
     if (documentName && !allowedDocumentNames.includes(documentName)) {
       return res.status(400).json({
         success: false,
-        message: `Invalid documentName. Allowed values are: ${allowedDocumentNames.join(", ")}`
+        message: `Invalid documentName. Allowed values are: ${allowedDocumentNames.join(
+          ", "
+        )}`,
       });
     }
-    
+
     // Prepare update object
     const updateData = {
       memberName,
@@ -822,39 +974,29 @@ exports.updateKyc = async (req, res) => {
     // Handle optional file upload
     if (req.file) {
       // updateData.fileUrl = req.file.filename;
-      const fileUrl = `${req.protocol}://${req.get('host')}/Images/${req.file.filename}`;
+      const fileUrl = `${req.protocol}://${req.get("host")}/Images/${req.file.filename
+        }`;
       updateData.fileUrl = fileUrl;
     }
 
-    
     // Remove undefined fields (to avoid overwriting with undefined)
-    Object.keys(updateData).forEach(key => {
+    Object.keys(updateData).forEach((key) => {
       if (updateData[key] === undefined) delete updateData[key];
     });
-    
+
     const updated = await Kyc.findByIdAndUpdate(id, updateData, { new: true });
-    
+
     if (!updated) {
       return res.status(404).json({ success: false, message: "KYC not found" });
     }
-    
+
     return res.status(200).json({
       success: true,
       message: "KYC updated successfully",
-      updated
+      updated,
     });
-    
   } catch (error) {
     console.error("Update KYC error:", error);
     return res.status(500).json({ success: false, message: error.message });
   }
 };
-
-
-
-
-
-
-
-
-

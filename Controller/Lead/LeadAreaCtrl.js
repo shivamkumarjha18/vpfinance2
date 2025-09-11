@@ -8,20 +8,59 @@ exports.getAllAreas = async (req, res) => {
 };
 
 exports.createArea = async (req, res) => {
-  const { name, shortcode, pincode } = req.body;
-
-  if (!name || !shortcode || !pincode) {
-    return res.status(400).json({ error: "All fields are required" });
-  }
-
   try {
-    const newLeadArea = new Area({ name, shortcode, pincode });
+    const { name, shortcode, pincode, city } = req.body;
+
+    // ✅ Validate required fields
+    if (!name || !shortcode || !pincode || !city) {
+      return res.status(400).json({
+        success: false,
+        message: "Name, Shortcode, Pincode and City are required",
+      });
+    }
+
+    // ✅ Validate pincode (only numbers and 6 digits)
+    if (!/^\d{6}$/.test(pincode)) {
+      return res.status(400).json({
+        success: false,
+        message: "Pincode must be a 6-digit number",
+      });
+    }
+
+    // ✅ Check for duplicate (same pincode + name)
+    const existingArea = await Area.findOne({ pincode, name });
+    if (existingArea) {
+      return res.status(409).json({
+        success: false,
+        message: "Area with this name and pincode already exists",
+      });
+    }
+
+    // ✅ Save new area
+    const newLeadArea = new Area({
+      name: name.trim(),
+      shortcode: shortcode.toUpperCase().trim(),
+      pincode,
+      city: city.trim(),
+    });
+
     await newLeadArea.save();
-    res.status(201).json(newLeadArea);
+
+    return res.status(201).json({
+      success: true,
+      message: "Area created successfully",
+      data: newLeadArea,
+    });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("Error creating area:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error while creating area",
+      error: error.message,
+    });
   }
 };
+
 exports.getAreaById = async (req, res) => {
   try {
     const area = await Area.findById(req.params.id);

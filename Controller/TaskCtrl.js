@@ -223,11 +223,16 @@
 
 
 
-const { getModelByType } = require("../utils/GetModelByType");
-const Financial = require("../Models/FinancialProductModel");
-const mongoose = require("mongoose");
-const path = require("path");
-const fs = require("fs").promises;
+// const { getModelByType } = require("../utils/GetModelByType.js");
+import GetModelByType from "../utils/GetModelByType.js";
+// const Financial = require("../Models/FinancialProductModel");
+import FinancialProductModel from "../Models/FinancialProductModel.js";
+// const mongoose = require("mongoose");
+import mongoose from "mongoose";
+// const path = require("path");
+import path from "path";
+import fs from "fs"
+// const fs = require("fs").promises;
 
 // Helper function to clean request body
 const cleanRequestBody = (body) => {
@@ -244,12 +249,12 @@ const isValidObjectId = (id) => {
 };
 
 // Create a new task
-exports.createTask = async (req, res) => {
+export const createTask = async (req, res) => {
   try {
     const type = req.body.type;
     console.log(`Creating task of type: ${type}`);
     
-    const TaskModel = getModelByType(type);
+    const TaskModel = GetModelByType(type);
     const body = cleanRequestBody(req.body);
 
     // Validate required fields
@@ -266,7 +271,10 @@ exports.createTask = async (req, res) => {
       });
     }
 
-    const financialProduct = await Financial.findById(body.cat);
+    // const financialProduct = await Financial.findById(body.cat);
+    const financialProduct = await FinancialProductModel.findById(body.cat);
+    
+    
     if (!financialProduct) {
       return res.status(404).json({
         message: "Financial product not found",
@@ -342,15 +350,19 @@ exports.createTask = async (req, res) => {
 };
 
 // Get all tasks with filtering and pagination
-exports.getAllTasks = async (req, res) => {
+export const getAllTasks = async (req, res) => {
   try {
+    // console.log(req);
+    
     const type = req.query.type;
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const status = req.query.status;
     const search = req.query.search;
+    console.log(type);
     
-    const TaskModel = getModelByType(type);
+    
+    const TaskModel = GetModelByType(type);
     
     // Build query
     let query = {};
@@ -374,6 +386,10 @@ exports.getAllTasks = async (req, res) => {
       TaskModel.countDocuments(query)
     ]);
 
+    console.log(tasks);
+    console.log(total);
+    
+
     res.status(200).json({
       tasks,
       pagination: {
@@ -394,7 +410,7 @@ exports.getAllTasks = async (req, res) => {
 };
 
 // Get task by ID
-exports.getTaskById = async (req, res) => {
+export const getTaskById = async (req, res) => {
   try {
     const type = req.query.type;
     const { id } = req.params;
@@ -403,7 +419,7 @@ exports.getTaskById = async (req, res) => {
       return res.status(400).json({ message: "Invalid task ID format" });
     }
 
-    const TaskModel = getModelByType(type);
+    const TaskModel = GetModelByType(type);
     const task = await TaskModel.findById(id).populate('cat', 'name category description');
     
     if (!task) {
@@ -421,7 +437,7 @@ exports.getTaskById = async (req, res) => {
 };
 
 // Update task
-exports.updateTask = async (req, res) => {
+export const updateTask = async (req, res) => {
   try {
     const type = req.body.type;
     const { id } = req.params;
@@ -430,7 +446,7 @@ exports.updateTask = async (req, res) => {
       return res.status(400).json({ message: "Invalid task ID format" });
     }
 
-    const TaskModel = getModelByType(type);
+    const TaskModel = GetModelByType(type);
     const body = cleanRequestBody(req.body);
 
     // Check if task exists
@@ -445,7 +461,7 @@ exports.updateTask = async (req, res) => {
         return res.status(400).json({ message: "Invalid financial product ID format" });
       }
       
-      const financialProduct = await Financial.findById(body.cat);
+      const financialProduct = await FinancialProductModel.findById(body.cat);
       if (!financialProduct) {
         return res.status(404).json({ message: "Financial product not found" });
       }
@@ -514,6 +530,8 @@ exports.updateTask = async (req, res) => {
       runValidators: true,
     }).populate('cat', 'name category');
 
+    console.log(updated,"this is update function");
+
     res.status(200).json({ 
       message: "Task updated successfully", 
       task: updated 
@@ -528,7 +546,7 @@ exports.updateTask = async (req, res) => {
 };
 
 // Update task status
-exports.updateTaskStatus = async (req, res) => {
+export const updateTaskStatus = async (req, res) => {
   try {
     const type = req.query.type;
     const { id } = req.params;
@@ -545,7 +563,7 @@ exports.updateTaskStatus = async (req, res) => {
       });
     }
 
-    const TaskModel = getModelByType(type);
+    const TaskModel = GetModelByType(type);
     const updated = await TaskModel.findByIdAndUpdate(
       id, 
       { status }, 
@@ -570,16 +588,19 @@ exports.updateTaskStatus = async (req, res) => {
 };
 
 // Delete task
-exports.deleteTask = async (req, res) => {
+export const deleteTask = async (req, res) => {
   try {
     const type = req.query.type;
     const { id } = req.params;
+
+    console.log(id,type,"this is for delete");
+    
 
     if (!isValidObjectId(id)) {
       return res.status(400).json({ message: "Invalid task ID format" });
     }
 
-    const TaskModel = getModelByType(type);
+    const TaskModel = GetModelByType(type);
     const task = await TaskModel.findById(id);
     
     if (!task) {
@@ -617,10 +638,10 @@ exports.deleteTask = async (req, res) => {
 };
 
 // Get task statistics
-exports.getTaskStats = async (req, res) => {
+export const getTaskStats = async (req, res) => {
   try {
     const type = req.query.type;
-    const TaskModel = getModelByType(type);
+    const TaskModel = GetModelByType(type);
 
     const stats = await TaskModel.aggregate([
       {
@@ -657,7 +678,7 @@ exports.getTaskStats = async (req, res) => {
 };
 
 // Bulk delete tasks
-exports.bulkDeleteTasks = async (req, res) => {
+export const bulkDeleteTasks = async (req, res) => {
   try {
     const type = req.body.type;
     const { taskIds } = req.body;
@@ -675,7 +696,7 @@ exports.bulkDeleteTasks = async (req, res) => {
       });
     }
 
-    const TaskModel = getModelByType(type);
+    const TaskModel = GetModelByType(type);
     const result = await TaskModel.deleteMany({ _id: { $in: taskIds } });
 
     res.status(200).json({ 
@@ -692,7 +713,7 @@ exports.bulkDeleteTasks = async (req, res) => {
 };
 
 // Bulk update status
-exports.bulkUpdateStatus = async (req, res) => {
+export const bulkUpdateStatus = async (req, res) => {
   try {
     const type = req.body.type;
     const { taskIds, status } = req.body;
@@ -708,7 +729,7 @@ exports.bulkUpdateStatus = async (req, res) => {
       });
     }
 
-    const TaskModel = getModelByType(type);
+    const TaskModel = GetModelByType(type);
     const result = await TaskModel.updateMany(
       { _id: { $in: taskIds } },
       { status }

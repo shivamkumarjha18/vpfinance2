@@ -105,6 +105,7 @@ router.patch("/:id/status", validateTaskType, TaskController.updateTaskStatus);
 
 // Delete a task by ID
 router.delete("/:id", validateTaskType, TaskController.deleteTask);
+router.delete("/delete/:id", validateTaskType, TaskController.deleteTask);
 
 // Bulk operations
 router.post("/bulk/delete", validateTaskType, TaskController.bulkDeleteTasks);

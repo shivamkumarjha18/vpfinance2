@@ -28,11 +28,14 @@ router.put("/add/futurepriorities/:clientId", ClientCtrl.addFuturePrioritiesAndN
 
 // add proposed financial plan
 router.put("/add/proposedplan/:clientId", upload.array("documents"), ClientCtrl.addProposedFinancialPlan)
+//update proposed status
+router.put("/add/updateproposedplan/:clientId",  ClientCtrl.updatePorposedStatus)
 
 
 
 // update personal details of the client
 router.put("/update/personaldetails/:clientId", ClientCtrl.updatePersonalDetails);
+router.put("/update/image/:firstId", upload.single('document'),ClientCtrl.updateImage);
 
 
 // Get All Clients
@@ -76,5 +79,4 @@ router.delete('/kyc/:id', ClientCtrl.deleteKyc);
 
 
 module.exports = router;
-
 

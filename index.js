@@ -1,5 +1,3 @@
-
-
 require("dotenv").config();
 
 const express = require("express");
@@ -13,11 +11,7 @@ const morgan = require("morgan");
 const app = express();
 
 // Middleware
-app.use(cors({
-  origin: 'https://test00-lemon.vercel.app/', // Specific frontend URL
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Allowed methods
-  credentials: true // Allow cookies/auth headers if needed
-}));
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan("tiny"));
@@ -49,10 +43,12 @@ const ImpDocumentRoute      = require("./Routes/ImpDocumentRoute");
 const ClientRoute           = require("./Routes/ClientRoute");
 const SuspectRoute          = require("./Routes/SuspectRoute");
 const ProspectRoute         = require("./Routes/ProspectRoute");
+const kycrouter = require("./Routes/Kycdocumentname");
 
 // Routes
 app.use("/api",                     require("./Routes/upload"));
 app.use("/api/Task",                TaskRoute);
+app.use("/api/kycdocument",         kycrouter)
 app.use("/api/FinancialProduct",    FinancialProductRoute);
 app.use("/api/CompanyName",         CompanyNameRoute);
 app.use("/api/registrar",           RegistrarRoute);
@@ -70,7 +66,8 @@ app.use("/api/leadType",            LeadTypeRoute);
 app.use("/api/leadSource",          LeadSourceRoute);
 app.use("/api/occupation/types",    OccupationTypeRoute);
 app.use("/api/occupation",      LeadOccupationRoute);
-
+app.use("/images", express.static("public/images"));
+app.use('/Images', express.static(path.join(__dirname, 'public/Images')));
 
 
 // Error Handling Middleware

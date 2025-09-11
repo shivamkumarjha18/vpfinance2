@@ -12,7 +12,7 @@ const kycSchema = new mongoose.Schema({
   documentName: {
     type: String,
     required: true,
-    enum:["Registration form", "Rough data sheet", "School certificate", "Aadhar Card", "Pan Card", "Photo", "Driving License", "Voter Id", "Policy Status"]
+   enum:["Registration form", "Rough data sheet", "School certificate", "Aadhar Card", "Pan Card", "Photo", "Driving License", "Voter Id", "Policy Status"]
   },
   documentNumber: {
     type: String,

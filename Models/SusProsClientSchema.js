@@ -259,9 +259,7 @@ const familyMemberSchema = new mongoose.Schema({
   dobRecord: Date,
   marriageDate: Date,
   includeHealth: Boolean,
-  contact:String,   
-  // new things add by shivam
-
+  contact:String,
   healthHistory: [healthHistorySchema],
 });
 
@@ -332,13 +330,13 @@ const needsSchema = new mongoose.Schema({
 });
 
 const proposedPlanSchema = new mongoose.Schema({
-  createdDate: { type: Date, required: true },
+  createdDate: { type: Date},
   memberName: { type: String, required: true },
   financialProduct: { type: String, required: true },
   financialCompany: { type: String, required: true },
   planName: { type: String, required: true },
-  documents: { type: [String]  },
-  status:{type:String}
+  documents: { type: [String] },
+  status:{type: String}
 });
 
 const personalDetailsSchema = new mongoose.Schema({
@@ -349,42 +347,7 @@ const personalDetailsSchema = new mongoose.Schema({
   mobileNo:Number,
   emailId:String,
   name :String,
-  // groupName: {
-  //   type: String,
-  //   required: function () {
-  //       return ["suspect", "prospect"].includes(this.parent()?.status);
-  //   },
-  // },
-  // gender: {
-  //   type: String,
-  //   required: function () {
-  //       return ["suspect", "prospect"].includes(this.parent()?.status);
-  //   },
-  // },
-  // salutation: {
-  //   type: String,
-  //   required: function () {
-  //       return ["suspect", "prospect"].includes(this.parent()?.status);
-  //   },
-  // },
-  // mobileNo: {
-  //   type: Number,
-  //   required: function () {
-  //       return ["suspect", "prospect"].includes(this.parent()?.status);
-  //   },
-  // },
-  // emailId: {
-  //   type: String,
-  //   required: function () {
-  //       return ["suspect", "prospect"].includes(this.parent()?.status);
-  //   },
-  // },
-  // name: {
-  //   type: String,
-  //   required: function () {
-  //       return ["suspect", "prospect"].includes(this.parent()?.status);
-  //   },
-  // },
+
   organisation: String,
   designation: String,
   annualIncome: String,
@@ -423,6 +386,7 @@ const personalDetailsSchema = new mongoose.Schema({
   pincode: Number,
   dob: Date,
   dom: Date,
+  profilepic:String
 });
 
 const TestShema = new mongoose.Schema({
