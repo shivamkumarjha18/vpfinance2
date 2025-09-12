@@ -497,7 +497,7 @@ exports.updatePorposedStatus = async (req, res) => {
   try {
     const { clientId } = req.params;
     const { status, selected } = req.body;
-    console.log(status, selected);
+    console.log(status, selected,'ttttttttttttttt');
 
     if (!status || !selected) {
       return res.status(403).json({ message: "all fields are required" });
@@ -802,17 +802,7 @@ exports.getAllFamilyMembers = async (req, res) => {
 // CREATE a new KYC
 exports.createKyc = async (req, res) => {
   try {
-    const DOCUMENT_ENUM = [
-      "Registration form",
-      "Rough data sheet",
-      "School certificate",
-      "Aadhar Card",
-      "Pan Card",
-      "Photo",
-      "Driving License",
-      "Voter Id",
-      "Policy Status",
-    ];
+
 
     const { clientId } = req.params;
     const { memberName, documentName, documentNumber, remark } = req.body;
@@ -823,15 +813,7 @@ exports.createKyc = async (req, res) => {
         .json({ success: false, message: "Client ID is required" });
     }
 
-    // Validate documentName against enum
-    if (!DOCUMENT_ENUM.includes(documentName.trim())) {
-      return res.status(400).json({
-        success: false,
-        message: `Invalid documentName. Must be one of: ${DOCUMENT_ENUM.join(
-          ", "
-        )}`,
-      });
-    }
+
 
     // Check if file was uploaded
     if (!req.file) {
@@ -879,16 +861,13 @@ exports.createKyc = async (req, res) => {
 
     const uploadedDocs = uploadedKycs.map((k) => k.documentName);
 
-    const responseList = DOCUMENT_ENUM.map((doc) => ({
-      documentName: doc,
-      status: uploadedDocs.includes(doc) ? "complete" : "remaining",
-    }));
+
 
     return res.status(201).json({
       success: true,
       message: "KYC uploaded successfully",
       uploaded: kyc,
-      documentStatus: responseList,
+
     });
   } catch (error) {
     console.error(error);
