@@ -41,6 +41,7 @@ exports.createClient = async (req, res) => {
 };
 
 // add family members
+
 exports.addFamilyMember = async (req, res) => {
   try {
     const { clientId } = req.params;
@@ -52,8 +53,6 @@ exports.addFamilyMember = async (req, res) => {
     }
 
     const membersArray = req.body;
-    console.log(membersArray);
-
     if (!Array.isArray(membersArray) || membersArray.length === 0) {
       return res.status(400).json({
         success: false,
@@ -68,7 +67,8 @@ exports.addFamilyMember = async (req, res) => {
         .json({ success: false, message: "Client not found" });
     }
 
-    const formattedMembers = membersArray.map((member) => {
+    // Add new members
+    membersArray.forEach((member) => {
       const {
         title,
         name,
@@ -83,32 +83,26 @@ exports.addFamilyMember = async (req, res) => {
         healthHistory,
       } = member;
 
-      const newMember = {
-        title,
-        name,
-        relation,
-        annualIncome,
-        contact,
-        occupation,
-        dobActual,
-        dobRecord,
-        marriageDate,
+      client.familyMembers.push({
+        title: title || "",
+        name: name || "",
+        relation: relation || "",
+        annualIncome: annualIncome || "",
+        contact: contact || "",
+        occupation: occupation || "",
+        dobActual: dobActual || "",
+        dobRecord: dobRecord || "",
+        marriageDate: marriageDate || "",
         includeHealth: includeHealth || false,
-      };
-
-      if (includeHealth && healthHistory) {
-        newMember.healthHistory = healthHistory;
-      }
-
-      return newMember;
+        healthHistory: includeHealth ? healthHistory : undefined,
+      });
     });
 
-    client.familyMembers.push(...formattedMembers);
     await client.save();
 
-    res.status(201).json({
+    res.status(200).json({
       success: true,
-      message: `${formattedMembers.length} family member(s) added successfully`,
+      message: "Family member(s) added successfully",
       familyMembers: client.familyMembers,
       clientId: client._id,
     });
@@ -120,6 +114,313 @@ exports.addFamilyMember = async (req, res) => {
     });
   }
 };
+
+
+// exports.addFamilyMember = async (req, res) => {
+//   try {
+//     const { clientId } = req.params;
+
+//     if (!clientId) {
+//       return res
+//         .status(400)
+//         .json({ success: false, message: "Please provide clientId" });
+//     }
+
+//     const membersArray = req.body;
+//     console.log(membersArray);
+
+//     if (!Array.isArray(membersArray) || membersArray.length === 0) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "Request body must be a non-empty array of family members",
+//       });
+//     }
+
+//     const client = await clientModel.findById(clientId);
+//     if (!client) {
+//       return res
+//         .status(404)
+//         .json({ success: false, message: "Client not found" });
+//     }
+
+//     const formattedMembers = membersArray.map((member) => {
+//       const {
+//         title,
+//         name,
+//         relation,
+//         annualIncome,
+//         contact,
+//         occupation,
+//         dobActual,
+//         dobRecord,
+//         marriageDate,
+//         includeHealth,
+//         healthHistory,
+//       } = member;
+
+//       const newMember = {
+//         title,
+//         name,
+//         relation,
+//         annualIncome,
+//         contact,
+//         occupation,
+//         dobActual,
+//         dobRecord,
+//         marriageDate,
+//         includeHealth: includeHealth || false,
+//       };
+
+//       if (includeHealth && healthHistory) {
+//         newMember.healthHistory = healthHistory;
+//       }
+
+//       return newMember;
+//     });
+
+//     client.familyMembers.push(...formattedMembers);
+//     await client.save();
+
+//     res.status(201).json({
+//       success: true,
+//       message: `${formattedMembers.length} family member(s) added successfully`,
+//       familyMembers: client.familyMembers,
+//       clientId: client._id,
+//     });
+//   } catch (error) {
+//     res.status(500).json({
+//       success: false,
+//       message: "Failed to add family member(s)",
+//       error: error.message,
+//     });
+//   }
+// };
+
+// exports.updateFamilyMember = async (req, res) => {
+//   try {
+//     const { clientId } = req.params;
+
+//     if (!clientId) {
+//       return res
+//         .status(400)
+//         .json({ success: false, message: "Please provide clientId" });
+//     }
+
+//     const membersArray = req.body;
+//     if (!Array.isArray(membersArray) || membersArray.length === 0) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "Request body must be a non-empty array of family members",
+//       });
+//     }
+
+//     const client = await clientModel.findById(clientId);
+//     if (!client) {
+//       return res
+//         .status(404)
+//         .json({ success: false, message: "Client not found" });
+//     }
+
+//     membersArray.forEach((member) => {
+//       const {
+//         _id, // 👈 comes from frontend if member already exists
+//         title,
+//         name,
+//         relation,
+//         annualIncome,
+//         contact,
+//         occupation,
+//         dobActual,
+//         dobRecord,
+//         marriageDate,
+//         includeHealth,
+//         healthHistory,
+//       } = member;
+
+//       if (_id) {
+//         // ✅ Update existing member
+//         const existingMember = client.familyMembers.id(_id);
+//         if (existingMember) {
+//           existingMember.title = title;
+//           existingMember.name = name;
+//           existingMember.relation = relation;
+//           existingMember.annualIncome = annualIncome;
+//           existingMember.contact = contact;
+//           existingMember.occupation = occupation;
+//           existingMember.dobActual = dobActual;
+//           existingMember.dobRecord = dobRecord;
+//           existingMember.marriageDate = marriageDate;
+//           existingMember.includeHealth = includeHealth || false;
+//           if (includeHealth && healthHistory) {
+//             existingMember.healthHistory = healthHistory;
+//           }
+//         }
+//       } else {
+//         // ✅ Add new member
+//         client.familyMembers.push({
+//           title,
+//           name,
+//           relation,
+//           annualIncome,
+//           contact,
+//           occupation,
+//           dobActual,
+//           dobRecord,
+//           marriageDate,
+//           includeHealth: includeHealth || false,
+//           healthHistory: includeHealth ? healthHistory : undefined,
+//         });
+//       }
+//     });
+
+//     await client.save();
+
+//     res.status(200).json({
+//       success: true,
+//       message: "Family member(s) updated successfully",
+//       familyMembers: client.familyMembers,
+//       clientId: client._id,
+//     });
+//   } catch (error) {
+//     res.status(500).json({
+//       success: false,
+//       message: "Failed to update family member(s)",
+//       error: error.message,
+//     });
+//   }
+// };
+
+exports.updateFamilyMember = async (req, res) => {
+  try {
+    const { clientId } = req.params;
+
+    if (!clientId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Please provide clientId" });
+    }
+
+    const membersArray = req.body;
+    if (!Array.isArray(membersArray) || membersArray.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Request body must be a non-empty array of family members",
+      });
+    }
+
+    const client = await clientModel.findById(clientId);
+    if (!client) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Client not found" });
+    }
+
+    // Get IDs from incoming membersArray
+    const incomingMemberIds = membersArray
+      .filter((member) => member._id)
+      .map((member) => member._id.toString());
+
+    // Remove members not present in membersArray
+    client.familyMembers = client.familyMembers.filter((member) =>
+      incomingMemberIds.includes(member._id.toString())
+    );
+
+    // Process each member in membersArray (update or add)
+    membersArray.forEach((member) => {
+      const {
+        _id,
+        title,
+        name,
+        relation,
+        annualIncome,
+        contact,
+        occupation,
+        dobActual,
+        dobRecord,
+        marriageDate,
+        includeHealth,
+        healthHistory,
+      } = member;
+
+      if (_id) {
+        // Update existing member
+        const existingMember = client.familyMembers.id(_id);
+        if (existingMember) {
+          existingMember.title = title || "";
+          existingMember.name = name || "";
+          existingMember.relation = relation || "";
+          existingMember.annualIncome = annualIncome || "";
+          existingMember.contact = contact || "";
+          existingMember.occupation = occupation || "";
+          existingMember.dobActual = dobActual || "";
+          existingMember.dobRecord = dobRecord || "";
+          existingMember.marriageDate = marriageDate || "";
+          existingMember.includeHealth = includeHealth || false;
+          if (includeHealth && healthHistory) {
+            existingMember.healthHistory = healthHistory;
+          } else {
+            existingMember.healthHistory = undefined;
+          }
+        } else {
+          // If _id is provided but not found, treat as new member
+          client.familyMembers.push({
+            title: title || "",
+            name: name || "",
+            relation: relation || "",
+            annualIncome: annualIncome || "",
+            contact: contact || "",
+            occupation: occupation || "",
+            dobActual: dobActual || "",
+            dobRecord: dobRecord || "",
+            marriageDate: marriageDate || "",
+            includeHealth: includeHealth || false,
+            healthHistory: includeHealth ? healthHistory : undefined,
+          });
+        }
+      } else {
+        // Add new member
+        client.familyMembers.push({
+          title: title || "",
+          name: name || "",
+          relation: relation || "",
+          annualIncome: annualIncome || "",
+          contact: contact || "",
+          occupation: occupation || "",
+          dobActual: dobActual || "",
+          dobRecord: dobRecord || "",
+          marriageDate: marriageDate || "",
+          includeHealth: includeHealth || false,
+          healthHistory: includeHealth ? healthHistory : undefined,
+        });
+      }
+    });
+
+    await client.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Family member(s) updated successfully",
+      familyMembers: client.familyMembers,
+      clientId: client._id,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to update family member(s)",
+      error: error.message,
+    });
+  }
+};
+
+
+
+
+
+
+
+
+
+
 
 // add financial details of the client
 exports.addFinancialInfo = async (req, res) => {
@@ -140,72 +441,29 @@ exports.addFinancialInfo = async (req, res) => {
         .json({ success: false, message: "Client not found" });
     }
 
-    // console.log("Request body:", req.body);
-    // console.log("Request files:", req.files);
-
     // Parse JSON strings if they exist, otherwise use empty arrays
     let insuranceData = [];
     let investmentsData = [];
     let loansData = [];
 
-    console.log(req.body.insurance);
-    console.log(req.body.investments);
-    console.log(req.body.loans);
-
-    const insurance = req?.body?.insurance?.map((item) => {
-      if (!item.submissionDate || item.submissionDate.trim() === "") {
-        return {
-          ...item,
-          submissionDate: new Date().toISOString().split("T")[0], // format YYYY-MM-DD
-        };
-      }
-      return item;
-    });
-
-    const investments = req?.body?.investments?.map((item) => {
-      if (!item.submissionDate || item.submissionDate.trim() === "") {
-        return {
-          ...item,
-          submissionDate: new Date().toISOString().split("T")[0], // format YYYY-MM-DD
-        };
-      }
-      return item;
-    });
-
-    const loans = req?.body?.loans?.map((item) => {
-      if (!item.submissionDate || item.submissionDate.trim() === "") {
-        return {
-          ...item,
-          submissionDate: new Date().toISOString().split("T")[0], // format YYYY-MM-DD
-        };
-      }
-      return item;
-    });
-
     try {
-      // Handle both JSON strings and direct arrays
       if (req.body.insurance) {
-        // typeof req.body.insurance === "string"
-        //   ? JSON.parse(req.body.insurance)
-        //   : req.body.insurance;
         insuranceData =
           typeof req.body.insurance === "string"
-            ? JSON.parse(insurance)
-            : insurance;
+            ? JSON.parse(req.body.insurance)
+            : req.body.insurance;
       }
-
       if (req.body.investments) {
         investmentsData =
           typeof req.body.investments === "string"
-            ? JSON.parse(investments)
-            : investments;
+            ? JSON.parse(req.body.investments)
+            : req.body.investments;
       }
-
       if (req.body.loans) {
         loansData =
           typeof req.body.loans === "string"
-            ? JSON.parse(loans)
-            : loans;
+            ? JSON.parse(req.body.loans)
+            : req.body.loans;
       }
     } catch (parseError) {
       console.error("JSON parsing error:", parseError);
@@ -221,27 +479,146 @@ exports.addFinancialInfo = async (req, res) => {
     investmentsData = Array.isArray(investmentsData) ? investmentsData : [];
     loansData = Array.isArray(loansData) ? loansData : [];
 
+    // Set default submissionDate if not provided
+    const setDefaultSubmissionDate = (item) => {
+      if (!item.submissionDate || item.submissionDate.trim() === "") {
+        return {
+          ...item,
+          submissionDate: new Date().toISOString().split("T")[0], // format YYYY-MM-DD
+        };
+      }
+      return item;
+    };
+
+    insuranceData = insuranceData.map(setDefaultSubmissionDate);
+    investmentsData = investmentsData.map(setDefaultSubmissionDate);
+    loansData = loansData.map(setDefaultSubmissionDate);
+
     console.log("Parsed data:", { insuranceData, investmentsData, loansData });
 
     // Attach document filenames to each item if files exist
-    // const attachFiles = (dataArray, uploadedFilesArray = []) => {
-    //   if (Array.isArray(dataArray) && Array.isArray(uploadedFilesArray)) {
-    //     dataArray.forEach((item, index) => {
-    //       if (uploadedFilesArray[index]) {
-    //         item.document = uploadedFilesArray[index].filename;
-    //       }
-    //     });
-    //   }
-    // };
-
     const attachFiles = (dataArray, uploadedFilesArray = []) => {
       if (Array.isArray(dataArray) && Array.isArray(uploadedFilesArray)) {
         dataArray.forEach((item, index) => {
-          if (uploadedFilesArray[index]) {
-            item.document = uploadedFilesArray[index].filename;
-          } else {
-            item.document = null;
-          }
+          item.document = uploadedFilesArray[index] ? uploadedFilesArray[index].filename : null;
+        });
+      }
+    };
+
+    // Safely access file arrays
+    const insuranceFiles = req.files?.insuranceDocuments || [];
+    const investmentFiles = req.files?.investmentDocuments || [];
+    const loanFiles = req.files?.loanDocuments || [];
+
+    attachFiles(insuranceData, insuranceFiles);
+    attachFiles(investmentsData, investmentFiles);
+    attachFiles(loansData, loanFiles);
+
+    // Replace existing financialInfo with new data
+    client.financialInfo = {
+      insurance: insuranceData,
+      investments: investmentsData,
+      loans: loansData,
+    };
+
+    // Save client
+    await client.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Financial info added successfully",
+      financialInfo: client.financialInfo,
+      clientId: client._id,
+    });
+  } catch (error) {
+    console.error("Error in addFinancialInfo:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: error.message,
+    });
+  }
+};
+
+//update financial details of the client
+exports.updateFinancialInfo = async (req, res) => {
+  try {
+    const { clientId } = req.params;
+
+    if (!clientId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Client ID is required" });
+    }
+
+    // Find the client
+    const client = await clientModel.findById(clientId);
+    if (!client) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Client not found" });
+    }
+
+    // Parse JSON strings if they exist, otherwise use empty arrays
+    let insuranceData = [];
+    let investmentsData = [];
+    let loansData = [];
+
+    try {
+      if (req.body.insurance) {
+        insuranceData =
+          typeof req.body.insurance === "string"
+            ? JSON.parse(req.body.insurance)
+            : req.body.insurance;
+      }
+      if (req.body.investments) {
+        investmentsData =
+          typeof req.body.investments === "string"
+            ? JSON.parse(req.body.investments)
+            : req.body.investments;
+      }
+      if (req.body.loans) {
+        loansData =
+          typeof req.body.loans === "string"
+            ? JSON.parse(req.body.loans)
+            : req.body.loans;
+      }
+    } catch (parseError) {
+      console.error("JSON parsing error:", parseError);
+      return res.status(400).json({
+        success: false,
+        message: "Invalid JSON data format",
+        error: parseError.message,
+      });
+    }
+
+    // Ensure arrays are actually arrays
+    insuranceData = Array.isArray(insuranceData) ? insuranceData : [];
+    investmentsData = Array.isArray(investmentsData) ? investmentsData : [];
+    loansData = Array.isArray(loansData) ? loansData : [];
+
+    // Set default submissionDate if not provided
+    const setDefaultSubmissionDate = (item) => {
+      if (!item.submissionDate || item.submissionDate.trim() === "") {
+        return {
+          ...item,
+          submissionDate: new Date().toISOString().split("T")[0], // format YYYY-MM-DD
+        };
+      }
+      return item;
+    };
+
+    insuranceData = insuranceData.map(setDefaultSubmissionDate);
+    investmentsData = investmentsData.map(setDefaultSubmissionDate);
+    loansData = loansData.map(setDefaultSubmissionDate);
+
+    console.log("Parsed data:", { insuranceData, investmentsData, loansData });
+
+    // Attach document filenames to each item if files exist
+    const attachFiles = (dataArray, uploadedFilesArray = []) => {
+      if (Array.isArray(dataArray) && Array.isArray(uploadedFilesArray)) {
+        dataArray.forEach((item, index) => {
+          item.document = uploadedFilesArray[index] ? uploadedFilesArray[index].filename : null;
         });
       }
     };
@@ -264,43 +641,92 @@ exports.addFinancialInfo = async (req, res) => {
       };
     }
 
-    // Append new data (only if arrays have content)
-    if (insuranceData.length > 0) {
-      client.financialInfo.insurance.push(...insuranceData);
-    }
-    if (investmentsData.length > 0) {
-      client.financialInfo.investments.push(...investmentsData);
-    }
-    if (loansData.length > 0) {
-      client.financialInfo.loans.push(...loansData);
-    }
+    // Process insurance: update existing items, add new ones, remove others
+    const insuranceIds = insuranceData
+      .filter((item) => item._id)
+      .map((item) => item._id.toString());
+    client.financialInfo.insurance = client.financialInfo.insurance.filter((item) =>
+      insuranceIds.includes(item._id.toString())
+    );
 
-    // Check if any data was actually added
-    const totalItemsAdded =
-      insuranceData.length + investmentsData.length + loansData.length;
-    if (totalItemsAdded === 0) {
-      return res.status(400).json({
-        success: false,
-        message: "No financial data provided",
-      });
-    }
+    insuranceData.forEach((item) => {
+      const { _id, ...data } = item;
+      if (_id) {
+        const existingItem = client.financialInfo.insurance.id(_id);
+        if (existingItem) {
+          Object.assign(existingItem, {
+            ...data,
+            document: item.document || existingItem.document || null,
+          });
+        } else {
+          client.financialInfo.insurance.push({ ...data, document: item.document || null });
+        }
+      } else {
+        client.financialInfo.insurance.push({ ...data, document: item.document || null });
+      }
+    });
+
+    // Process investments: update existing items, add new ones, remove others
+    const investmentIds = investmentsData
+      .filter((item) => item._id)
+      .map((item) => item._id.toString());
+    client.financialInfo.investments = client.financialInfo.investments.filter((item) =>
+      investmentIds.includes(item._id.toString())
+    );
+
+    investmentsData.forEach((item) => {
+      const { _id, ...data } = item;
+      if (_id) {
+        const existingItem = client.financialInfo.investments.id(_id);
+        if (existingItem) {
+          Object.assign(existingItem, {
+            ...data,
+            document: item.document || existingItem.document || null,
+          });
+        } else {
+          client.financialInfo.investments.push({ ...data, document: item.document || null });
+        }
+      } else {
+        client.financialInfo.investments.push({ ...data, document: item.document || null });
+      }
+    });
+
+    // Process loans: update existing items, add new ones, remove others
+    const loanIds = loansData
+      .filter((item) => item._id)
+      .map((item) => item._id.toString());
+    client.financialInfo.loans = client.financialInfo.loans.filter((item) =>
+      loanIds.includes(item._id.toString())
+    );
+
+    loansData.forEach((item) => {
+      const { _id, ...data } = item;
+      if (_id) {
+        const existingItem = client.financialInfo.loans.id(_id);
+        if (existingItem) {
+          Object.assign(existingItem, {
+            ...data,
+            document: item.document || existingItem.document || null,
+          });
+        } else {
+          client.financialInfo.loans.push({ ...data, document: item.document || null });
+        }
+      } else {
+        client.financialInfo.loans.push({ ...data, document: item.document || null });
+      }
+    });
 
     // Save client
     await client.save();
 
     return res.status(200).json({
       success: true,
-      message: "Financial info with documents added successfully",
+      message: "Financial info updated successfully",
       financialInfo: client.financialInfo,
       clientId: client._id,
-      added: {
-        insurance: insuranceData.length,
-        investments: investmentsData.length,
-        loans: loansData.length,
-      },
     });
   } catch (error) {
-    console.error("Error in addFinancialInfo:", error);
+    console.error("Error in updateFinancialInfo:", error);
     return res.status(500).json({
       success: false,
       message: "Server error",
@@ -308,6 +734,394 @@ exports.addFinancialInfo = async (req, res) => {
     });
   }
 };
+
+
+
+
+
+
+
+// Existing updateFamilyMember controller (unchanged, included for completeness)
+exports.updateFamilyMember = async (req, res) => {
+  try {
+    const { clientId } = req.params;
+
+    if (!clientId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Please provide clientId" });
+    }
+
+    const membersArray = req.body;
+    if (!Array.isArray(membersArray)) {
+      return res.status(400).json({
+        success: false,
+        message: "Request body must be an array of family members",
+      });
+    }
+
+    const client = await clientModel.findById(clientId);
+    if (!client) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Client not found" });
+    }
+
+    // Get IDs from incoming membersArray
+    const incomingMemberIds = membersArray
+      .filter((member) => member._id)
+      .map((member) => member._id.toString());
+
+    // Remove members not present in membersArray
+    client.familyMembers = client.familyMembers.filter((member) =>
+      incomingMemberIds.includes(member._id.toString())
+    );
+
+    // Process each member in membersArray (update or add)
+    membersArray.forEach((member) => {
+      const {
+        _id,
+        title,
+        name,
+        relation,
+        annualIncome,
+        contact,
+        occupation,
+        dobActual,
+        dobRecord,
+        marriageDate,
+        includeHealth,
+        healthHistory,
+      } = member;
+
+      if (_id) {
+        // Update existing member
+        const existingMember = client.familyMembers.id(_id);
+        if (existingMember) {
+          existingMember.title = title || "";
+          existingMember.name = name || "";
+          existingMember.relation = relation || "";
+          existingMember.annualIncome = annualIncome || "";
+          existingMember.contact = contact || "";
+          existingMember.occupation = occupation || "";
+          existingMember.dobActual = dobActual || "";
+          existingMember.dobRecord = dobRecord || "";
+          existingMember.marriageDate = marriageDate || "";
+          existingMember.includeHealth = includeHealth || false;
+          existingMember.healthHistory = includeHealth && healthHistory ? healthHistory : undefined;
+        } else {
+          // If _id is provided but not found, treat as new member
+          client.familyMembers.push({
+            title: title || "",
+            name: name || "",
+            relation: relation || "",
+            annualIncome: annualIncome || "",
+            contact: contact || "",
+            occupation: occupation || "",
+            dobActual: dobActual || "",
+            dobRecord: dobRecord || "",
+            marriageDate: marriageDate || "",
+            includeHealth: includeHealth || false,
+            healthHistory: includeHealth ? healthHistory : undefined,
+          });
+        }
+      } else {
+        // Add new member
+        client.familyMembers.push({
+          title: title || "",
+          name: name || "",
+          relation: relation || "",
+          annualIncome: annualIncome || "",
+          contact: contact || "",
+          occupation: occupation || "",
+          dobActual: dobActual || "",
+          dobRecord: dobRecord || "",
+          marriageDate: marriageDate || "",
+          includeHealth: includeHealth || false,
+          healthHistory: includeHealth ? healthHistory : undefined,
+        });
+      }
+    });
+
+    await client.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Family member(s) updated successfully",
+      familyMembers: client.familyMembers,
+      clientId: client._id,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to update family member(s)",
+      error: error.message,
+    });
+  }
+};
+
+// Existing addFamilyMember controller (unchanged, included for reference)
+exports.addFamilyMember = async (req, res) => {
+  try {
+    const { clientId } = req.params;
+
+    if (!clientId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Please provide clientId" });
+    }
+
+    const membersArray = req.body;
+    if (!Array.isArray(membersArray)) {
+      return res.status(400).json({
+        success: false,
+        message: "Request body must be an array of family members",
+      });
+    }
+
+    const client = await clientModel.findById(clientId);
+    if (!client) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Client not found" });
+    }
+
+    // Clear existing family members and replace with new ones
+    client.familyMembers = [];
+    membersArray.forEach((member) => {
+      const {
+        title,
+        name,
+        relation,
+        annualIncome,
+        contact,
+        occupation,
+        dobActual,
+        dobRecord,
+        marriageDate,
+        includeHealth,
+        healthHistory,
+      } = member;
+
+      client.familyMembers.push({
+        title: title || "",
+        name: name || "",
+        relation: relation || "",
+        annualIncome: annualIncome || "",
+        contact: contact || "",
+        occupation: occupation || "",
+        dobActual: dobActual || "",
+        dobRecord: dobRecord || "",
+        marriageDate: marriageDate || "",
+        includeHealth: includeHealth || false,
+        healthHistory: includeHealth ? healthHistory : undefined,
+      });
+    });
+
+    await client.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Family member(s) added successfully",
+      familyMembers: client.familyMembers,
+      clientId: client._id,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to add family member(s)",
+      error: error.message,
+    });
+  }
+};
+
+
+// exports.addFinancialInfo = async (req, res) => {
+//   try {
+//     const { clientId } = req.params;
+
+//     if (!clientId) {
+//       return res
+//         .status(400)
+//         .json({ success: false, message: "Client ID is required" });
+//     }
+
+//     // Find the client
+//     const client = await clientModel.findById(clientId);
+//     if (!client) {
+//       return res
+//         .status(404)
+//         .json({ success: false, message: "Client not found" });
+//     }
+
+//     // console.log("Request body:", req.body);
+//     // console.log("Request files:", req.files);
+
+//     // Parse JSON strings if they exist, otherwise use empty arrays
+//     let insuranceData = [];
+//     let investmentsData = [];
+//     let loansData = [];
+
+//     console.log(req.body.insurance);
+//     console.log(req.body.investments);
+//     console.log(req.body.loans);
+
+//     const insurance = req?.body?.insurance?.map((item) => {
+//       if (!item.submissionDate || item.submissionDate.trim() === "") {
+//         return {
+//           ...item,
+//           submissionDate: new Date().toISOString().split("T")[0], // format YYYY-MM-DD
+//         };
+//       }
+//       return item;
+//     });
+
+//     const investments = req?.body?.investments?.map((item) => {
+//       if (!item.submissionDate || item.submissionDate.trim() === "") {
+//         return {
+//           ...item,
+//           submissionDate: new Date().toISOString().split("T")[0], // format YYYY-MM-DD
+//         };
+//       }
+//       return item;
+//     });
+
+//     const loans = req?.body?.loans?.map((item) => {
+//       if (!item.submissionDate || item.submissionDate.trim() === "") {
+//         return {
+//           ...item,
+//           submissionDate: new Date().toISOString().split("T")[0], // format YYYY-MM-DD
+//         };
+//       }
+//       return item;
+//     });
+
+//     try {
+//       // Handle both JSON strings and direct arrays
+//       if (req.body.insurance) {
+//         // typeof req.body.insurance === "string"
+//         //   ? JSON.parse(req.body.insurance)
+//         //   : req.body.insurance;
+//         insuranceData =
+//           typeof req.body.insurance === "string"
+//             ? JSON.parse(insurance)
+//             : insurance;
+//       }
+
+//       if (req.body.investments) {
+//         investmentsData =
+//           typeof req.body.investments === "string"
+//             ? JSON.parse(investments)
+//             : investments;
+//       }
+
+//       if (req.body.loans) {
+//         loansData =
+//           typeof req.body.loans === "string"
+//             ? JSON.parse(loans)
+//             : loans;
+//       }
+//     } catch (parseError) {
+//       console.error("JSON parsing error:", parseError);
+//       return res.status(400).json({
+//         success: false,
+//         message: "Invalid JSON data format",
+//         error: parseError.message,
+//       });
+//     }
+
+//     // Ensure arrays are actually arrays
+//     insuranceData = Array.isArray(insuranceData) ? insuranceData : [];
+//     investmentsData = Array.isArray(investmentsData) ? investmentsData : [];
+//     loansData = Array.isArray(loansData) ? loansData : [];
+
+//     console.log("Parsed data:", { insuranceData, investmentsData, loansData });
+
+//     // Attach document filenames to each item if files exist
+//     // const attachFiles = (dataArray, uploadedFilesArray = []) => {
+//     //   if (Array.isArray(dataArray) && Array.isArray(uploadedFilesArray)) {
+//     //     dataArray.forEach((item, index) => {
+//     //       if (uploadedFilesArray[index]) {
+//     //         item.document = uploadedFilesArray[index].filename;
+//     //       }
+//     //     });
+//     //   }
+//     // };
+
+//     const attachFiles = (dataArray, uploadedFilesArray = []) => {
+//       if (Array.isArray(dataArray) && Array.isArray(uploadedFilesArray)) {
+//         dataArray.forEach((item, index) => {
+//           if (uploadedFilesArray[index]) {
+//             item.document = uploadedFilesArray[index].filename;
+//           } else {
+//             item.document = null;
+//           }
+//         });
+//       }
+//     };
+
+//     // Safely access file arrays
+//     const insuranceFiles = req.files?.insuranceDocuments || [];
+//     const investmentFiles = req.files?.investmentDocuments || [];
+//     const loanFiles = req.files?.loanDocuments || [];
+
+//     attachFiles(insuranceData, insuranceFiles);
+//     attachFiles(investmentsData, investmentFiles);
+//     attachFiles(loansData, loanFiles);
+
+//     // Initialize financialInfo if not present
+//     if (!client.financialInfo) {
+//       client.financialInfo = {
+//         insurance: [],
+//         investments: [],
+//         loans: [],
+//       };
+//     }
+
+//     // Append new data (only if arrays have content)
+//     if (insuranceData.length > 0) {
+//       client.financialInfo.insurance.push(...insuranceData);
+//     }
+//     if (investmentsData.length > 0) {
+//       client.financialInfo.investments.push(...investmentsData);
+//     }
+//     if (loansData.length > 0) {
+//       client.financialInfo.loans.push(...loansData);
+//     }
+
+//     // Check if any data was actually added
+//     const totalItemsAdded =
+//       insuranceData.length + investmentsData.length + loansData.length;
+//     if (totalItemsAdded === 0) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "No financial data provided",
+//       });
+//     }
+
+//     // Save client
+//     await client.save();
+
+//     return res.status(200).json({
+//       success: true,
+//       message: "Financial info with documents added successfully",
+//       financialInfo: client.financialInfo,
+//       clientId: client._id,
+//       added: {
+//         insurance: insuranceData.length,
+//         investments: investmentsData.length,
+//         loans: loansData.length,
+//       },
+//     });
+//   } catch (error) {
+//     console.error("Error in addFinancialInfo:", error);
+//     return res.status(500).json({
+//       success: false,
+//       message: "Server error",
+//       error: error.message,
+//     });
+//   }
+// };
 
 // add future priorities and needs
 exports.addFuturePrioritiesAndNeeds = async (req, res) => {

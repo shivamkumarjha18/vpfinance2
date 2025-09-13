@@ -9,18 +9,37 @@ const upload = require("../config/upload");
 router.post("/create", ClientCtrl.createClient);
 
 // add family members
-router.put("/add/family/:clientId", ClientCtrl.addFamilyMember);
-
+router.post("/add/family/:clientId", ClientCtrl.addFamilyMember);
+router.put("/update/family/:clientId", ClientCtrl.updateFamilyMember);
 // add financial info
-router.put( "/add/financialinfo/:clientId",
- upload.fields([
+// router.put( "/add/financialinfo/:clientId",
+//  upload.fields([
+//     { name: "insuranceDocuments", maxCount: 10 },
+//     { name: "investmentDocuments", maxCount: 10 },
+//     { name: "loanDocuments", maxCount: 10 },
+// ]),
+//   ClientCtrl.addFinancialInfo
+// );
+
+router.post(
+  "/add/financial/:clientId",
+  upload.fields([
     { name: "insuranceDocuments", maxCount: 10 },
     { name: "investmentDocuments", maxCount: 10 },
     { name: "loanDocuments", maxCount: 10 },
-]),
-  ClientCtrl.addFinancialInfo
+  ]),
+   ClientCtrl.addFinancialInfo
 );
 
+router.put(
+  "/update/financial/:clientId",
+  upload.fields([
+    { name: "insuranceDocuments", maxCount: 10 },
+    { name: "investmentDocuments", maxCount: 10 },
+    { name: "loanDocuments", maxCount: 10 },
+  ]),
+ ClientCtrl.updateFinancialInfo
+);
 
 // add future priotities
 router.put("/add/futurepriorities/:clientId", ClientCtrl.addFuturePrioritiesAndNeeds)
