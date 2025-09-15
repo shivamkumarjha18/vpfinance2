@@ -113,182 +113,7 @@ exports.addFamilyMember = async (req, res) => {
       error: error.message,
     });
   }
-};
-
-
-// exports.addFamilyMember = async (req, res) => {
-//   try {
-//     const { clientId } = req.params;
-
-//     if (!clientId) {
-//       return res
-//         .status(400)
-//         .json({ success: false, message: "Please provide clientId" });
-//     }
-
-//     const membersArray = req.body;
-//     console.log(membersArray);
-
-//     if (!Array.isArray(membersArray) || membersArray.length === 0) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "Request body must be a non-empty array of family members",
-//       });
-//     }
-
-//     const client = await clientModel.findById(clientId);
-//     if (!client) {
-//       return res
-//         .status(404)
-//         .json({ success: false, message: "Client not found" });
-//     }
-
-//     const formattedMembers = membersArray.map((member) => {
-//       const {
-//         title,
-//         name,
-//         relation,
-//         annualIncome,
-//         contact,
-//         occupation,
-//         dobActual,
-//         dobRecord,
-//         marriageDate,
-//         includeHealth,
-//         healthHistory,
-//       } = member;
-
-//       const newMember = {
-//         title,
-//         name,
-//         relation,
-//         annualIncome,
-//         contact,
-//         occupation,
-//         dobActual,
-//         dobRecord,
-//         marriageDate,
-//         includeHealth: includeHealth || false,
-//       };
-
-//       if (includeHealth && healthHistory) {
-//         newMember.healthHistory = healthHistory;
-//       }
-
-//       return newMember;
-//     });
-
-//     client.familyMembers.push(...formattedMembers);
-//     await client.save();
-
-//     res.status(201).json({
-//       success: true,
-//       message: `${formattedMembers.length} family member(s) added successfully`,
-//       familyMembers: client.familyMembers,
-//       clientId: client._id,
-//     });
-//   } catch (error) {
-//     res.status(500).json({
-//       success: false,
-//       message: "Failed to add family member(s)",
-//       error: error.message,
-//     });
-//   }
-// };
-
-// exports.updateFamilyMember = async (req, res) => {
-//   try {
-//     const { clientId } = req.params;
-
-//     if (!clientId) {
-//       return res
-//         .status(400)
-//         .json({ success: false, message: "Please provide clientId" });
-//     }
-
-//     const membersArray = req.body;
-//     if (!Array.isArray(membersArray) || membersArray.length === 0) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "Request body must be a non-empty array of family members",
-//       });
-//     }
-
-//     const client = await clientModel.findById(clientId);
-//     if (!client) {
-//       return res
-//         .status(404)
-//         .json({ success: false, message: "Client not found" });
-//     }
-
-//     membersArray.forEach((member) => {
-//       const {
-//         _id, // 👈 comes from frontend if member already exists
-//         title,
-//         name,
-//         relation,
-//         annualIncome,
-//         contact,
-//         occupation,
-//         dobActual,
-//         dobRecord,
-//         marriageDate,
-//         includeHealth,
-//         healthHistory,
-//       } = member;
-
-//       if (_id) {
-//         // ✅ Update existing member
-//         const existingMember = client.familyMembers.id(_id);
-//         if (existingMember) {
-//           existingMember.title = title;
-//           existingMember.name = name;
-//           existingMember.relation = relation;
-//           existingMember.annualIncome = annualIncome;
-//           existingMember.contact = contact;
-//           existingMember.occupation = occupation;
-//           existingMember.dobActual = dobActual;
-//           existingMember.dobRecord = dobRecord;
-//           existingMember.marriageDate = marriageDate;
-//           existingMember.includeHealth = includeHealth || false;
-//           if (includeHealth && healthHistory) {
-//             existingMember.healthHistory = healthHistory;
-//           }
-//         }
-//       } else {
-//         // ✅ Add new member
-//         client.familyMembers.push({
-//           title,
-//           name,
-//           relation,
-//           annualIncome,
-//           contact,
-//           occupation,
-//           dobActual,
-//           dobRecord,
-//           marriageDate,
-//           includeHealth: includeHealth || false,
-//           healthHistory: includeHealth ? healthHistory : undefined,
-//         });
-//       }
-//     });
-
-//     await client.save();
-
-//     res.status(200).json({
-//       success: true,
-//       message: "Family member(s) updated successfully",
-//       familyMembers: client.familyMembers,
-//       clientId: client._id,
-//     });
-//   } catch (error) {
-//     res.status(500).json({
-//       success: false,
-//       message: "Failed to update family member(s)",
-//       error: error.message,
-//     });
-//   }
-// };
+} 
 
 exports.updateFamilyMember = async (req, res) => {
   try {
@@ -411,13 +236,6 @@ exports.updateFamilyMember = async (req, res) => {
     });
   }
 };
-
-
-
-
-
-
-
 
 
 
@@ -936,7 +754,6 @@ exports.addFamilyMember = async (req, res) => {
 };
 
 
-// exports.addFinancialInfo = async (req, res) => {
 //   try {
 //     const { clientId } = req.params;
 
@@ -1184,64 +1001,9 @@ exports.addFuturePrioritiesAndNeeds = async (req, res) => {
   }
 };
 
-// add proposed financial plan
-// exports.addProposedFinancialPlan = async (req, res) => {
-//   try {
-//     const { clientId } = req.params;
 
-//     // Validate client ID
-//     if (!clientId) {
-//       return res
-//         .status(400)
-//         .json({ success: false, message: "Client ID is required" });
-//     }
 
-//     // Validate request body
-//     if (!req.body) {
-//       return res
-//         .status(400)
-//         .json({ success: false, message: "Request body is required" });
-//     }
 
-//     // Handle file uploads
-//     const files = req.files;
-//     if (!files) {
-//       return res.status(401).json({
-//         success: false,
-//         message: "Please provide documents to upload",
-//       });
-//     }
-
-//     const documentPaths = files.map((file) => file.filename);
-
-//     const clientToUpdate = await clientModel.findById(clientId);
-//     if (!clientToUpdate) {
-//       return res
-//         .status(404)
-//         .json({ success: false, message: "Client not found" });
-//     }
-
-//     // Create new proposed plan object using {...req.body}
-//     const newProposedPlan = {
-//       ...req.body,
-//       documents: documentPaths,
-//     };
-
-//     clientToUpdate.proposedPlan.push(newProposedPlan);
-
-//     await clientToUpdate.save();
-
-//     res.status(200).json({
-//       success: true,
-//       message: "Proposed financial plan updated successfully",
-//       proposedPlan: clientToUpdate.proposedPlan,
-//       clientId: clientToUpdate._id,
-//     });
-//   } catch (error) {
-//     console.error("Error adding proposed financial plan:", error);
-//     res.status(500).json({ error: "Server error", details: error.message });
-//   }
-// };
 
 exports.addProposedFinancialPlan = async (req, res) => {
   try {
@@ -1372,22 +1134,21 @@ exports.updatePersonalDetails = async (req, res) => {
       });
     }
 
-    // 3. Find the client by ID and update the personalDetails object.
-    // The '$set' operator is used here to replace the entire 'personalDetails' object.
+  
     const updatedClient = await clientModel.findByIdAndUpdate(
       clientId,
       { $set: { personalDetails } },
-      { new: true, runValidators: true } // Return the updated document and run schema validators.
+      { new: true, runValidators: true } 
     );
 
-    // 4. Handle the case where the client ID is not found.
+  
     if (!updatedClient) {
       return res
         .status(404)
         .json({ success: false, message: "Client not found." });
     }
 
-    // 5. Send a successful response with the updated client document.
+
     res.status(200).json({
       success: true,
       message: "Personal details updated successfully.",
