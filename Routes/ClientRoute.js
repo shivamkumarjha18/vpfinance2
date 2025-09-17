@@ -11,6 +11,9 @@ router.post("/create", ClientCtrl.createClient);
 // add family members
 router.post("/add/family/:clientId", ClientCtrl.addFamilyMember);
 router.put("/update/family/:clientId", ClientCtrl.updateFamilyMember);
+
+
+
 // add financial info
 // router.put( "/add/financialinfo/:clientId",
 //  upload.fields([
@@ -41,8 +44,15 @@ router.put(
  ClientCtrl.updateFinancialInfo
 );
 
-// add future priotities
-router.put("/add/futurepriorities/:clientId", ClientCtrl.addFuturePrioritiesAndNeeds)
+router.post(
+  "/add/future-priorities/:clientId",
+  ClientCtrl.addFuturePrioritiesAndNeeds
+);
+
+router.put(
+  "/update/future-priorities/:clientId",
+  ClientCtrl.updateFuturePrioritiesAndNeeds
+);
 
 
 // add proposed financial plan

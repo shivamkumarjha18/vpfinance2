@@ -941,65 +941,163 @@ exports.addFamilyMember = async (req, res) => {
 // };
 
 // add future priorities and needs
+// ✅ Add Future Priorities & Needs
 exports.addFuturePrioritiesAndNeeds = async (req, res) => {
   try {
-    const clientId = req.params.clientId;
-    const { futurePriorities, needs } = req.body;
+    const { clientId } = req.params;
 
-    // Validate client ID
     if (!clientId) {
-      return res.status(400).json({ error: "Client ID is required" });
-    }
-
-    // Validate futurePriorities
-    if (!Array.isArray(futurePriorities)) {
       return res
         .status(400)
-        .json({ error: "futurePriorities must be an array" });
+        .json({ success: false, message: "Please provide clientId" });
     }
 
-    for (const priority of futurePriorities) {
-      if (
-        !priority.priorityName ||
-        !Array.isArray(priority.members) ||
-        typeof priority.approxAmount !== "number" ||
-        !priority.duration
-      ) {
-        return res
-          .status(400)
-          .json({ error: "Invalid priority object structure" });
-      }
+    const { futurePriorities, needs } = req.body;
+
+    if (!Array.isArray(futurePriorities) || futurePriorities.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "futurePriorities must be a non-empty array",
+      });
     }
 
-    // Build update object
-    const updateData = {
-      futurePriorities,
-    };
+    const client = await clientModel.findById(clientId);
+    if (!client) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Client not found" });
+    }
 
+    // Push new priorities
+    futurePriorities.forEach((priority) => {
+      const { priorityName, members, approxAmount, duration } = priority;
+
+      client.futurePriorities.push({
+        priorityName: priorityName || "",
+        members: Array.isArray(members) ? members : [],
+        approxAmount: typeof approxAmount === "number" ? approxAmount : 0,
+        duration: duration || "",
+      });
+    });
+
+    // Add needs if provided
     if (needs && typeof needs === "object") {
-      updateData.needs = needs;
+      client.needs = needs;
     }
 
-    const updatedClient = await clientModel.findByIdAndUpdate(
-      clientId,
-      updateData,
-      { new: true, runValidators: true }
-    );
-
-    if (!updatedClient) {
-      return res.status(404).json({ error: "Client not found" });
-    }
+    await client.save();
 
     res.status(200).json({
-      message: "Future priorities (and needs if provided) updated successfully",
-      client: updatedClient,
-      clientId: updatedClient._id,
+      success: true,
+      message: "Future priorities (and needs if provided) added successfully",
+      futurePriorities: client.futurePriorities,
+      needs: client.needs,
+      clientId: client._id,
     });
   } catch (error) {
-    console.error("Error updating future priorities and needs:", error);
-    res.status(500).json({ error: "Server error", details: error.message });
+    console.error("Error adding future priorities:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to add future priorities",
+      error: error.message,
+    });
   }
 };
+
+// ✅ Update Future Priorities & Needs
+exports.updateFuturePrioritiesAndNeeds = async (req, res) => {
+  try {
+    const { clientId } = req.params;
+
+    if (!clientId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Please provide clientId" });
+    }
+
+    const { futurePriorities, needs } = req.body;
+
+    if (!Array.isArray(futurePriorities) || futurePriorities.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "futurePriorities must be a non-empty array",
+      });
+    }
+
+    const client = await clientModel.findById(clientId);
+    if (!client) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Client not found" });
+    }
+
+    // Get IDs from incoming priorities
+    const incomingPriorityIds = futurePriorities
+      .filter((p) => p._id)
+      .map((p) => p._id.toString());
+
+    // Remove priorities not present anymore
+    client.futurePriorities = client.futurePriorities.filter((p) =>
+      incomingPriorityIds.includes(p._id.toString())
+    );
+
+    // Update or add priorities
+    futurePriorities.forEach((priority) => {
+      const { _id, priorityName, members, approxAmount, duration } = priority;
+
+      if (_id) {
+        // Update existing
+        const existing = client.futurePriorities.id(_id);
+        if (existing) {
+          existing.priorityName = priorityName || "";
+          existing.members = Array.isArray(members) ? members : [];
+          existing.approxAmount =
+            typeof approxAmount === "number" ? approxAmount : 0;
+          existing.duration = duration || "";
+        } else {
+          // If ID not found, push new
+          client.futurePriorities.push({
+            priorityName: priorityName || "",
+            members: Array.isArray(members) ? members : [],
+            approxAmount: typeof approxAmount === "number" ? approxAmount : 0,
+            duration: duration || "",
+          });
+        }
+      } else {
+        // Add new
+        client.futurePriorities.push({
+          priorityName: priorityName || "",
+          members: Array.isArray(members) ? members : [],
+          approxAmount: typeof approxAmount === "number" ? approxAmount : 0,
+          duration: duration || "",
+        });
+      }
+    });
+
+    // Update needs if provided
+    if (needs && typeof needs === "object") {
+      client.needs = needs;
+    }
+
+    await client.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Future priorities (and needs if provided) updated successfully",
+      futurePriorities: client.futurePriorities,
+      needs: client.needs,
+      clientId: client._id,
+    });
+  } catch (error) {
+    console.error("Error updating future priorities:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to update future priorities",
+      error: error.message,
+    });
+  }
+};
+
 
 
 

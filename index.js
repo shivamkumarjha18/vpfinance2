@@ -1,3 +1,5 @@
+
+
 require("dotenv").config();
 
 const express = require("express");
@@ -25,6 +27,11 @@ mongoose
 
 
 // Import Routes
+const telecallerRoutes = require("./Routes/telecallerRoutes.js");
+const telemarketerRoutes = require("./Routes/telemarketerRoutes.js");
+const OARoutes=require("./Routes/OARoutes.js");
+const OERoutes=require("./Routes/OERoutes.js");
+const HRRoutes=require("./Routes/HRRoutes.js");
 const LeadSourceRoute       = require("./Routes/Lead/LeadSourceRoute");
 const LeadOccupationRoute   = require("./Routes/Lead/LeadOccupationRoute");
 const LeadAreaRoute         = require("./Routes/Lead/LeadAreaRoute");
@@ -45,7 +52,13 @@ const SuspectRoute          = require("./Routes/SuspectRoute");
 const ProspectRoute         = require("./Routes/ProspectRoute");
 const kycrouter = require("./Routes/Kycdocumentname");
 
+
 // Routes
+app.use("/api/telemarketer", telemarketerRoutes);
+app.use("/api/telecaller", telecallerRoutes);
+app.use("/api/OE", OERoutes);
+app.use("/api/OA", OARoutes);
+app.use("/api/HR", HRRoutes);
 app.use("/api",                     require("./Routes/upload"));
 app.use("/api/Task",                TaskRoute);
 app.use("/api/kycdocument",         kycrouter)
