@@ -54,6 +54,19 @@ router.put(
   ClientCtrl.updateFuturePrioritiesAndNeeds
 );
 
+// ✅ Proposed Financial Plan Routes
+router.post(
+  "/add/proposed-plan/:clientId",
+  upload.array("documents", 10), // agar file upload karni hai
+  ClientCtrl.addProposedFinancialPlan
+);
+
+router.put(
+  "/update/proposed-plan/:clientId/:planId",
+  upload.array("documents", 10), // optional file update ke liye
+  ClientCtrl.updateProposedFinancialPlan
+);
+
 
 // add proposed financial plan
 router.put("/add/proposedplan/:clientId", upload.array("documents"), ClientCtrl.addProposedFinancialPlan)

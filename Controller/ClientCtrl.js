@@ -1100,6 +1100,113 @@ exports.updateFuturePrioritiesAndNeeds = async (req, res) => {
 
 
 
+// ✅ Add Proposed Financial Plan
+exports.addProposedFinancialPlan = async (req, res) => {
+  try {
+    const { clientId } = req.params;
+
+    if (!clientId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Client ID is required" });
+    }
+
+    const clientToUpdate = await clientModel.findById(clientId);
+    if (!clientToUpdate) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Client not found" });
+    }
+
+    // Handle file uploads (optional)
+    let documentPaths = [];
+    if (req.files && req.files.length > 0) {
+      documentPaths = req.files.map((file) => file.filename);
+    }
+
+    const newProposedPlan = {
+      ...req.body,
+      createdDate:
+        !req.body.createdDate || req.body.createdDate.trim() === ""
+          ? new Date().toISOString().split("T")[0] // YYYY-MM-DD format
+          : req.body.createdDate,
+      documents: documentPaths,
+    };
+
+    clientToUpdate.proposedPlan.push(newProposedPlan);
+    await clientToUpdate.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Proposed financial plan added successfully",
+      proposedPlan: clientToUpdate.proposedPlan,
+      clientId: clientToUpdate._id,
+    });
+  } catch (error) {
+    console.error("Error adding proposed financial plan:", error);
+    res.status(500).json({ error: "Server error", details: error.message });
+  }
+};
+
+// ✅ Update Proposed Financial Plan
+exports.updateProposedFinancialPlan = async (req, res) => {
+  try {
+    const { clientId, planId } = req.params;
+
+    if (!clientId || !planId) {
+      return res.status(400).json({
+        success: false,
+        message: "Client ID and Plan ID are required",
+      });
+    }
+
+    const client = await clientModel.findById(clientId);
+    if (!client) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Client not found" });
+    }
+
+    const planIndex = client.proposedPlan.findIndex(
+      (plan) => plan._id.toString() === planId
+    );
+
+    if (planIndex === -1) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Proposed plan not found" });
+    }
+
+    // Handle file uploads (optional)
+    let documentPaths = client.proposedPlan[planIndex].documents || [];
+    if (req.files && req.files.length > 0) {
+      documentPaths = [
+        ...documentPaths,
+        ...req.files.map((file) => file.filename),
+      ];
+    }
+
+    // Update plan fields
+    client.proposedPlan[planIndex] = {
+      ...client.proposedPlan[planIndex]._doc,
+      ...req.body,
+      documents: documentPaths,
+      updatedDate: new Date().toISOString().split("T")[0], // track update date
+    };
+
+    await client.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Proposed financial plan updated successfully",
+      proposedPlan: client.proposedPlan,
+      clientId: client._id,
+    });
+  } catch (error) {
+    console.error("Error updating proposed financial plan:", error);
+    res.status(500).json({ error: "Server error", details: error.message });
+  }
+};
 
 
 
@@ -1210,6 +1317,7 @@ exports.updatePorposedStatus = async (req, res) => {
     res.status(500).json({ error: "Server error", details: error.message });
   }
 };
+
 
 
 exports.updatePersonalDetails = async (req, res) => {
