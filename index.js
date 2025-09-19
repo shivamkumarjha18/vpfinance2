@@ -32,6 +32,7 @@ const telemarketerRoutes = require("./Routes/telemarketerRoutes.js");
 const OARoutes=require("./Routes/OARoutes.js");
 const OERoutes=require("./Routes/OERoutes.js");
 const HRRoutes=require("./Routes/HRRoutes.js");
+const authRoutes = require("./Routes/authRoutes");
 const LeadSourceRoute       = require("./Routes/Lead/LeadSourceRoute");
 const LeadOccupationRoute   = require("./Routes/Lead/LeadOccupationRoute");
 const LeadAreaRoute         = require("./Routes/Lead/LeadAreaRoute");
@@ -59,6 +60,7 @@ app.use("/api/telecaller", telecallerRoutes);
 app.use("/api/OE", OERoutes);
 app.use("/api/OA", OARoutes);
 app.use("/api/HR", HRRoutes);
+app.use("/api/auth", authRoutes);
 app.use("/api",                     require("./Routes/upload"));
 app.use("/api/Task",                TaskRoute);
 app.use("/api/kycdocument",         kycrouter)
