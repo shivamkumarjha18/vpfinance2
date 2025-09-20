@@ -1,4 +1,4 @@
-const HR = require("../ModelS/HRModel");
+const HR = require("../Models/HRModel");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 

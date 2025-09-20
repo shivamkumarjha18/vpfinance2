@@ -1,6 +1,6 @@
 const Telecaller = require("../Models/telecallerModel");
 const Telemarketer = require("../Models/telemarketerModel");
-const HR = require("../ModelS/HRModel");
+const HR = require("../Models/HRModel");
 const OA = require("../Models/OAModel");
 const OE = require("../Models/OEModel");
 const bcrypt = require("bcryptjs");
