@@ -197,6 +197,17 @@ const TestShema = new mongoose.Schema({
     },
   ],
   taskDetails: String,
+   // 🔥 NEW: Assignment fields add kiye
+  assignedTo: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Telecaller", // ya "User" agar generic rakhna hai
+    default: null
+  },
+  assignedRole: {
+    type: String,
+    enum: ["Telecaller", "HR", "Manager"],
+    default: null
+  },
   createdAt: {
     type: Date,
     default: Date.now,

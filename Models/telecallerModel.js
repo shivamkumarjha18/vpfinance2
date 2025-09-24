@@ -5,7 +5,11 @@ const telecallerSchema = new mongoose.Schema({
   password: { type: String, required: true, minlength: 6 },
   email: { type: String, required: true, unique: true, lowercase: true },
   mobileno: { type: String, required: true, unique: true },
-  role:{type: String}
+  role:{type: String},
+    assignedSuspects: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "testSchema"
+  }]
 }, { timestamps: true });
 
 const Telecaller = mongoose.model("Telecaller", telecallerSchema);
