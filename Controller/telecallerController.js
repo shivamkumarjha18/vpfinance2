@@ -125,27 +125,232 @@ const getTelecallerById = async (req, res) => {
   }
 };
 
+// // 🔥 FIXED: Assign Suspects to Telecaller
+// const assignSuspectsToTelecaller = async (req, res) => {
+//   try {
+//     const { role, selectedPerson, suspects } = req.body;
+
+//     // ✅ Validation checks
+//     if (!role || !selectedPerson || !suspects || suspects.length === 0) {
+//       return res.status(400).json({ 
+//         message: "Missing required fields: role, selectedPerson, and suspects are required" 
+//       });
+//     }
+
+//     // ✅ Check if telecaller exists (agar role telecaller hai)
+//     if (role === "Telecaller") {
+//       const telecaller = await Telecaller.findById(selectedPerson);
+//       if (!telecaller) {
+//         return res.status(404).json({ message: "Telecaller not found" });
+//       }
+//     }
+
+//     // ✅ Check if all suspects exist
+//     const existingSuspects = await Test.find({ _id: { $in: suspects } });
+//     if (existingSuspects.length !== suspects.length) {
+//       return res.status(404).json({ 
+//         message: "One or more suspects not found",
+//         found: existingSuspects.length,
+//         requested: suspects.length
+//       });
+//     }
+
+//     // ✅ Update suspects with assigned telecaller info
+//     const updateResult = await Test.updateMany(
+//       { _id: { $in: suspects } },
+//       { 
+//         $set: { 
+//           assignedTo: selectedPerson,
+//           assignedRole: role,
+//           assignedAt: new Date()
+//         } 
+//       }
+//     );
+
+//     // 🔥 FIXED: Update telecaller's assigned suspects array with proper structure
+//     if (role === "Telecaller") {
+//       const suspectObjects = suspects.map(suspectId => ({
+//         suspectId: suspectId,
+//         assignedAt: new Date()
+//       }));
+
+//       await Telecaller.findByIdAndUpdate(
+//         selectedPerson,
+//         { 
+//           $addToSet: { 
+//             assignedSuspects: { $each: suspectObjects } 
+//           } 
+//         }
+//       );
+//     }
+
+//     // ✅ Get updated suspects details for response
+//     const updatedSuspects = await Test.find({ _id: { $in: suspects } })
+//       .select("personalDetails assignedTo assignedRole assignedAt status")
+//       .populate("assignedTo", "username email");
+
+//     res.status(200).json({
+//       success: true,
+//       message: `Successfully assigned ${updateResult.modifiedCount} suspects to ${role}`,
+//       data: {
+//         role: role,
+//         selectedPerson: selectedPerson,
+//         assignedSuspectsCount: updateResult.modifiedCount,
+//         assignedSuspects: updatedSuspects
+//       }
+//     });
+
+//   } catch (error) {
+//     console.error("Error assigning suspects:", error);
+//     res.status(500).json({
+//       success: false,
+//       message: "Error assigning suspects to telecaller",
+//       error: error.message,
+//     });
+//   }
+// };
+
+// // 🔥 FIXED: Get Assigned Suspects for Telecaller
+// // const getAssignedSuspects = async (req, res) => {
+// //   try {
+// //     const { telecallerId } = req.params;
+
+// //     // ✅ Check if telecaller exists
+// //     const telecaller = await Telecaller.findById(telecallerId)
+// //       .populate({
+// //         path: "assignedSuspects.suspectId",
+// //         select: "personalDetails status", // assignedAt telecaller ke array se lenge
+// //       });
+
+// //     if (!telecaller) {
+// //       return res.status(404).json({
+// //         success: false,
+// //         message: "Telecaller not found",
+// //       });
+// //     }
+
+// //     // 🔥 OPTION 1: From telecaller.assignedSuspects
+// //     const assignedFromTelecaller = telecaller.assignedSuspects
+// //       .filter((item) => item.suspectId) // Ensure suspectId exists
+// //       .map((item) => ({
+// //         ...item.suspectId.toObject(),
+// //         assignedAt: item.assignedAt, // ✅ assigned date from Telecaller schema
+// //       }));
+
+// //     // 🔥 OPTION 2: From Test collection (fallback)
+// //     const assignedFromTest = await Test.find({ assignedTo: telecallerId })
+// //       .select("personalDetails assignedAt status") // ✅ assignedAt from Test schema
+// //       .sort({ assignedAt: -1 })
+// //       .lean();
+
+// //     // ✅ Choose telecaller array if available, else Test
+// //     const assignedSuspects =
+// //       assignedFromTelecaller.length > 0 ? assignedFromTelecaller : assignedFromTest;
+
+// //     res.status(200).json({
+// //       success: true,
+// //       message: "Assigned suspects fetched successfully",
+// //       data: {
+// //         telecaller: {
+// //           id: telecaller._id,
+// //           username: telecaller.username,
+// //           email: telecaller.email,
+// //         },
+// //         assignedSuspectsCount: assignedSuspects.length,
+// //         assignedSuspects: assignedSuspects.map((s) => ({
+// //           ...s,
+// //           assignedAt: s.assignedAt || null, // ✅ ensure date always included
+// //         })),
+// //       },
+// //     });
+// //   } catch (error) {
+// //     console.error("Error fetching assigned suspects:", error);
+// //     res.status(500).json({
+// //       success: false,
+// //       message: "Error fetching assigned suspects",
+// //       error: error.message,
+// //     });
+// //   }
+// // };
+// const getAssignedSuspects = async (req, res) => {
+//   try {
+//     const { telecallerId } = req.params;
+
+//     // ✅ Telecaller ke assigned suspects populate karo
+//     const telecaller = await Telecaller.findById(telecallerId)
+//       .populate({
+//         path: "assignedSuspects.suspectId",
+//         select: "personalDetails status", 
+//       })
+//       .lean();
+
+//     if (!telecaller) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "Telecaller not found",
+//       });
+//     }
+
+//     // 🔥 Merge suspect details + assignedAt from telecaller array
+//     const assignedFromTelecaller = telecaller.assignedSuspects
+//       .filter(item => item.suspectId)
+//       .map(item => ({
+//         ...item.suspectId,         // suspect ke details
+//         assignedAt: item.assignedAt || null, // ✅ assign date (task assign time)
+//       }));
+
+//     // 🔥 Fallback → Agar direct Test collection use karna ho
+//     const assignedFromTest = await Test.find({ assignedTo: telecallerId })
+//       .select("personalDetails assignedAt status")
+//       .sort({ assignedAt: -1 })
+//       .lean();
+
+//     // ✅ Agar telecaller.assignedSuspects me data hai to wahi use hoga
+//     const assignedSuspects =
+//       assignedFromTelecaller.length > 0 ? assignedFromTelecaller : assignedFromTest;
+
+//     res.status(200).json({
+//       success: true,
+//       message: "Assigned suspects fetched successfully",
+//       data: {
+//         telecaller: {
+//           id: telecaller._id,
+//           username: telecaller.username,
+//           email: telecaller.email,
+//         },
+//         assignedSuspectsCount: assignedSuspects.length,
+//         assignedSuspects: assignedSuspects.map(s => ({
+//           ...s,
+//           // ✅ ensure date always included
+//           assignedAt: s.assignedAt || null,
+//         })),
+//       },
+//     });
+//   } catch (error) {
+//     console.error("Error fetching assigned suspects:", error);
+//     res.status(500).json({
+//       success: false,
+//       message: "Error fetching assigned suspects",
+//       error: error.message,
+//     });
+//   }
+// };
 // 🔥 FIXED: Assign Suspects to Telecaller
 const assignSuspectsToTelecaller = async (req, res) => {
   try {
     const { role, selectedPerson, suspects } = req.body;
 
-    // ✅ Validation checks
     if (!role || !selectedPerson || !suspects || suspects.length === 0) {
       return res.status(400).json({ 
         message: "Missing required fields: role, selectedPerson, and suspects are required" 
       });
     }
 
-    // ✅ Check if telecaller exists (agar role telecaller hai)
     if (role === "Telecaller") {
       const telecaller = await Telecaller.findById(selectedPerson);
-      if (!telecaller) {
-        return res.status(404).json({ message: "Telecaller not found" });
-      }
+      if (!telecaller) return res.status(404).json({ message: "Telecaller not found" });
     }
 
-    // ✅ Check if all suspects exist (Test model use kiya)
     const existingSuspects = await Test.find({ _id: { $in: suspects } });
     if (existingSuspects.length !== suspects.length) {
       return res.status(404).json({ 
@@ -155,38 +360,47 @@ const assignSuspectsToTelecaller = async (req, res) => {
       });
     }
 
-    // ✅ Update suspects with assigned telecaller info (Test model use kiya)
-    const updateResult = await Test.updateMany(
+    const now = new Date();
+
+    // ✅ Update Test collection
+    await Test.updateMany(
       { _id: { $in: suspects } },
       { 
         $set: { 
           assignedTo: selectedPerson,
           assignedRole: role,
-          assignedAt: new Date()
+          assignedAt: now
         } 
       }
     );
 
-    // ✅ Update telecaller's assigned suspects array (optional)
+    // ✅ Update Telecaller assignedSuspects with status + date
     if (role === "Telecaller") {
+      const suspectObjects = suspects.map(suspectId => ({
+        suspectId,
+        assignedAt: now,
+        status: "assigned" // ✅ new field
+      }));
+
       await Telecaller.findByIdAndUpdate(
         selectedPerson,
-        { $addToSet: { assignedSuspects: { $each: suspects } } }
+        { 
+          $addToSet: { assignedSuspects: { $each: suspectObjects } } 
+        }
       );
     }
 
-    // ✅ Get updated suspects details for response (Test model use kiya)
     const updatedSuspects = await Test.find({ _id: { $in: suspects } })
       .select("personalDetails assignedTo assignedRole assignedAt status")
-      .populate("assignedTo", "username email"); // populate telecaller info
+      .populate("assignedTo", "username email");
 
     res.status(200).json({
       success: true,
-      message: `Successfully assigned ${updateResult.modifiedCount} suspects to ${role}`,
+      message: `Successfully assigned ${suspects.length} suspects to ${role}`,
       data: {
-        role: role,
-        selectedPerson: selectedPerson,
-        assignedSuspectsCount: updateResult.modifiedCount,
+        role,
+        selectedPerson,
+        assignedSuspectsCount: suspects.length,
         assignedSuspects: updatedSuspects
       }
     });
@@ -206,19 +420,22 @@ const getAssignedSuspects = async (req, res) => {
   try {
     const { telecallerId } = req.params;
 
-    // ✅ Check if telecaller exists
-    const telecaller = await Telecaller.findById(telecallerId);
-    if (!telecaller) {
-      return res.status(404).json({ 
-        success: false,
-        message: "Telecaller not found" 
-      });
-    }
+    const telecaller = await Telecaller.findById(telecallerId)
+      .populate({
+        path: "assignedSuspects.suspectId",
+        select: "personalDetails status",
+      })
+      .lean();
 
-    // ✅ Get all suspects assigned to this telecaller (Test model use kiya)
-    const assignedSuspects = await Test.find({ assignedTo: telecallerId })
-      .select("personalDetails assignedAt status")
-      .sort({ assignedAt: -1 }); // latest assigned first
+    if (!telecaller) return res.status(404).json({ success: false, message: "Telecaller not found" });
+
+    const assignedSuspects = telecaller.assignedSuspects
+      .filter(item => item.suspectId)
+      .map(item => ({
+        ...item.suspectId,
+        assignedAt: item.assignedAt || null,
+        status: item.status || "assigned" // ✅ include status
+      }));
 
     res.status(200).json({
       success: true,
@@ -227,14 +444,14 @@ const getAssignedSuspects = async (req, res) => {
         telecaller: {
           id: telecaller._id,
           username: telecaller.username,
-          email: telecaller.email
+          email: telecaller.email,
         },
         assignedSuspectsCount: assignedSuspects.length,
-        assignedSuspects: assignedSuspects
-      }
+        assignedSuspects,
+      },
     });
-
   } catch (error) {
+    console.error("Error fetching assigned suspects:", error);
     res.status(500).json({
       success: false,
       message: "Error fetching assigned suspects",
@@ -243,62 +460,19 @@ const getAssignedSuspects = async (req, res) => {
   }
 };
 
-// 🔥 FIXED: Unassign Suspects from Telecaller
-const unassignSuspects = async (req, res) => {
-  try {
-    const { telecallerId, suspectIds } = req.body;
 
-    if (!telecallerId || !suspectIds || suspectIds.length === 0) {
-      return res.status(400).json({ 
-        success: false,
-        message: "telecallerId and suspectIds are required" 
-      });
-    }
 
-    // ✅ Unassign suspects (remove assignment) - Test model use kiya
-    const updateResult = await Test.updateMany(
-      { 
-        _id: { $in: suspectIds }, 
-        assignedTo: telecallerId 
-      },
-      { 
-        $unset: { 
-          assignedTo: 1,
-          assignedRole: 1,
-          assignedAt: 1
-        }
-      }
-    );
+// 🔥 GET all assignments
 
-    // ✅ Remove from telecaller's assigned list
-    await Telecaller.findByIdAndUpdate(
-      telecallerId,
-      { $pullAll: { assignedSuspects: suspectIds } }
-    );
 
-    res.status(200).json({
-      success: true,
-      message: `Successfully unassigned ${updateResult.modifiedCount} suspects`,
-      data: {
-        unassignedCount: updateResult.modifiedCount
-      }
-    });
 
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Error unassigning suspects",
-      error: error.message,
-    });
-  }
-};
 
-module.exports = { 
-  registerTelecaller, 
-  loginTelecaller, 
-  getAllTelecallers, 
+
+module.exports = {
+  registerTelecaller,
+  loginTelecaller,
+  getAllTelecallers,
   getTelecallerById,
-  assignSuspectsToTelecaller,  // 🔥 FIXED
-  getAssignedSuspects,         // 🔥 FIXED
-  unassignSuspects             // 🔥 FIXED
+  assignSuspectsToTelecaller,
+  getAssignedSuspects,
 };
