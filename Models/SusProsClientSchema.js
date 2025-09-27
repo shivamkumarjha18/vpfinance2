@@ -2,6 +2,7 @@
 
 
 
+
 const mongoose = require("mongoose");
 
 // Reuse sub-documents
@@ -154,7 +155,90 @@ const personalDetailsSchema = new mongoose.Schema({
   profilepic:String
 });
 
-const TestShema = new mongoose.Schema({
+// const TestShema = new mongoose.Schema({
+//   status: {
+//     type: String,
+//     enum: ["suspect", "prospect", "client"],
+//   },
+//   personalDetails: personalDetailsSchema,
+//   education: {
+//     types: {
+//       type: String,
+//       enum: ["", "school", "college", "professional"],
+//     },
+//     schoolName: String,
+//     schoolSubjects: String,
+//     collegeName: String,
+//     collegeCourse: String,
+//     instituteName: String,
+//     professionalDegree: String,
+//   },
+//   leadInfo: {
+//     remark: String,
+//   },
+//   preferences: {},
+//   familyMembers: [familyMemberSchema],
+//   financialInfo: financialInfoSchema,
+//   futurePriorities: [
+//     {
+//       priorityName: { type: String, required: true },
+//       members: { type: [String], required: true },
+//       approxAmount: { type: Number, required: true },
+//       duration: { type: String, required: true },
+//       remark: { type: String },
+//     },
+//   ],
+//   proposedPlan: [proposedPlanSchema],
+//   needs: needsSchema,
+//   customerDoc: [customerDocSchema],
+//   kycs: [
+//     {
+//       type: mongoose.Schema.Types.ObjectId,
+//       ref: "Kyc",
+//     },
+//   ],
+//   taskDetails: String,
+//    // 🔥 NEW: Assignment fields add kiye
+//    assignedAt: Date, 
+   
+//   assignedTo: {
+//     type: mongoose.Schema.Types.ObjectId,
+//     ref: "Telecaller", // ya "User" agar generic rakhna hai
+//     default: null
+//   },
+//   assignedRole: {
+//     type: String,
+//     enum: ["Telecaller", "HR", "Manager"],
+//     default: null
+//   },
+//   createdAt: {
+//     type: Date,
+//     default: Date.now,
+//   },
+// });
+
+// module.exports = mongoose.model("testSchema", TestShema);
+
+const callTaskSchema = new mongoose.Schema({
+  taskDate: Date,
+  taskTime: String, // Add to capture time
+  taskRemarks: String,
+  taskStatus: {
+    type: String,
+    enum: ["Not Reachable", "Wrong Number", "Not Interested", "Call Not Picked", "Busy on Another Call", "Call After Sometimes", "Appointment Done", "Others"],
+  },
+});
+
+const callHistorySchema = new mongoose.Schema({
+  callDate: Date,
+  duration: String,
+  remarks: String,
+  mobile: String, // Assuming you need a mobile number field
+  status: String, // Add if status is also tracked in history
+  callBy: String, // Capture who made the call
+});
+
+const TestSchema = new mongoose.Schema({
   status: {
     type: String,
     enum: ["suspect", "prospect", "client"],
@@ -197,23 +281,23 @@ const TestShema = new mongoose.Schema({
     },
   ],
   taskDetails: String,
-   // 🔥 NEW: Assignment fields add kiye
-   assignedAt: Date, 
-   
+  assignedAt: Date,
   assignedTo: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Telecaller", // ya "User" agar generic rakhna hai
-    default: null
+    ref: "Telecaller",
+    default: null,
   },
   assignedRole: {
     type: String,
     enum: ["Telecaller", "HR", "Manager"],
-    default: null
+    default: null,
   },
   createdAt: {
     type: Date,
     default: Date.now,
   },
+  callTasks: [callTaskSchema],
+  callHistory: [callHistorySchema],
 });
 
-module.exports = mongoose.model("testSchema", TestShema);
+module.exports = mongoose.model('Test', TestSchema);

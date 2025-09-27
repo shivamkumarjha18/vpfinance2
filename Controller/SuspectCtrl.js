@@ -126,6 +126,77 @@ exports.updatePersonalDetails = async (req, res) => {
 
 
 
+exports.addCallTask = async (req, res) => {
+  try {
+    const { id } = req.params; // Suspect ID
+    const { taskDate, taskTime, taskRemarks, taskStatus } = req.body;
+
+    if (!taskDate || !taskStatus) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Task date and status are required." 
+      });
+    }
+
+    // Find the suspect and add the new call task
+    const suspect = await suspectModel.findById(id);
+    if (!suspect) {
+      return res.status(404).json({ 
+        success: false, 
+        message: "Suspect not found." 
+      });
+    }
+
+    suspect.callTasks.push({ taskDate, taskTime, taskRemarks, taskStatus });
+    await suspect.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Call task added successfully.",
+      suspect
+    });
+
+  } catch (error) {
+    console.error("Error adding call task:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error.",
+      details: error.message
+    });
+  }
+};
+
+
+// Get call history for a suspect
+exports.getCallHistory = async (req, res) => {
+  try {
+    const { id } = req.params; // Suspect ID
+
+    const suspect = await suspectModel.findById(id, 'callHistory');
+    if (!suspect) {
+      return res.status(404).json({ 
+        success: false, 
+        message: "Suspect not found." 
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      callHistory: suspect.callHistory
+    });
+
+  } catch (error) {
+    console.error("Error retrieving call history:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error.",
+      details: error.message
+    });
+  }
+};
+
+
+
 
 // Add family members to a suspect
 exports.addFamilyMember = async (req, res) => {

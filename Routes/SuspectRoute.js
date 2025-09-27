@@ -1,60 +1,52 @@
-
 const express = require("express");
 const router = express.Router();
 const SuspectCtrl = require("../Controller/SuspectCtrl");
 const upload = require("../config/upload");
 
-
-
-// create suspect
+// Create Suspect
 router.post("/create", SuspectCtrl.createSuspect);
 
-// add family members
+// Add Family Members
 router.put("/add/family/:id", SuspectCtrl.addFamilyMember);
 
-// add financial info
-router.put( "/add/financialinfo/:id",
- upload.fields([
+// Add Financial Info
+router.put("/add/financialinfo/:id",
+  upload.fields([
     { name: "insuranceDocuments", maxCount: 10 },
     { name: "investmentDocuments", maxCount: 10 },
     { name: "loanDocuments", maxCount: 10 },
-]),
+  ]),
   SuspectCtrl.addFinancialInfo
 );
 
+// Add Future Priorities
+router.put("/add/futurepriorities/:id", SuspectCtrl.addFuturePrioritiesAndNeeds);
 
-// add future priotities
-router.put("/add/futurepriorities/:id", SuspectCtrl.addFuturePrioritiesAndNeeds)
+// Add Proposed Financial Plan
+router.put("/add/proposedplan/:id", upload.array("documents"), SuspectCtrl.addProposedFinancialPlan);
 
-
-// add proposed financial plan
-router.put("/add/proposedplan/:id", upload.array("documents"), SuspectCtrl.addProposedFinancialPlan)
-
-
-
-// update personal details of the suspect
+// Update Personal Details
 router.put("/update/personaldetails/:id", SuspectCtrl.updatePersonalDetails);
 
-
 // Get All Suspects
-router.get("/all", SuspectCtrl.getAllSuspects)
-
+router.get("/all", SuspectCtrl.getAllSuspects);
 
 // Get Suspect by ID
 router.get("/:id", SuspectCtrl.getSuspectById);
 
+// Update Suspect Status
+router.put("/update/status/:id", SuspectCtrl.updateSuspectStatus);
 
-// Update Suspect  Status by ID
-router.put("/update/status/:id", SuspectCtrl.updateSuspectStatus)
+// Get All Family Members
+router.get("/family/details/:id", SuspectCtrl.getAllFamilyMembers);
 
-
-// Get all Family Members
-router.get("/family/details/:id", SuspectCtrl.getAllFamilyMembers)
-
-
-// Delete Suspect  by ID
+// Delete Suspect
 router.delete("/delete/:id", SuspectCtrl.deleteSuspect);
 
+// Add Call Task
+router.post("/:id/call-task", SuspectCtrl.addCallTask);
 
+// Get Call History
+router.get("/:id/call-history", SuspectCtrl.getCallHistory);
 
 module.exports = router;
