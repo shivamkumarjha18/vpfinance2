@@ -8,6 +8,8 @@ const cors = require("cors");
 const path = require("path");
 const morgan = require("morgan");
 
+//my name is ayan
+
 
 // Initialize Express app
 const app = express();
@@ -22,7 +24,7 @@ app.use(morgan("tiny"));
 // Database Connection
 mongoose
   .connect(process.env.dbUrl)
-  .then(() => console.log(" DB connected"))
+  .then(() => console.log(" DB connected for vpfinanace"))
   .catch((err) => console.error(" DB Connection Error:", err));
 
 
